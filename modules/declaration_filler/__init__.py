@@ -291,23 +291,93 @@ def _render_declaration_pdf(
     tax_result: TaxResult,
 ) -> bytes:
     """
-    Pixel-perfect рендер PDF декларации:
-      1. Грузим официальный бланк ФНС templates/knd_1152017/blank_YYYY.pdf
-      2. Генерируем overlay-слой (reportlab canvas) с текстом в координатах
-         из templates/knd_1152017/fields_YYYY.json
-      3. Merge overlay на подложку через pypdf (zero-loss)
-      4. Возвращаем bytes
+    Bridge: старый API (taxpayer + TaxResult) → новый (DeclarationData).
 
-    РЕАЛИЗАЦИЯ в modules.declaration_filler.pdf_overlay_filler — отдельный файл,
-    т.к. логика нетривиальная (разметка fields.json + тесты pixel-diff).
-    Создаётся в Фазе 0a после разметки координат.
+    Принимает flat TaxResult.decl_data и сплющивает его в типизированный DTO,
+    затем зовёт PdfOverlayFiller.render(DeclarationData).
+
+    Этот код — временный мост. После того как pipeline будет перестроен
+    (PR #16-18) и все callers перейдут на DeclarationData, эта функция
+    может быть упразднена.
     """
-    from .pdf_overlay_filler import PdfOverlayFiller
-    filler = PdfOverlayFiller(tax_period_year=tax_period_year)
-    return filler.render(
-        taxpayer=taxpayer,
-        tax_result=tax_result,
+    from datetime import date
+    from decimal import Decimal
+    from .declaration_data import (
+        DeclarationData, TitlePage, Section_1_1, Section_2_1_1,
+        OBJECT_INCOME, TAX_PERIOD_YEAR, LOC_IP_RESIDENCE,
+        TP_SIGN_IP_NO_EMPLOYEES,
     )
+    from .pdf_overlay_filler import PdfOverlayFiller
+
+    decl = tax_result.decl_data or {}
+    s11_raw = decl.get("section_1_1", {})
+    s211_raw = decl.get("section_2_1_1", {})
+
+    # Разбиваем ФИО на части
+    fio_parts = (taxpayer.fio or "").strip().split(maxsplit=2) if taxpayer.fio else []
+    fio_l1 = fio_parts[0] if len(fio_parts) > 0 else ""
+    fio_l2 = fio_parts[1] if len(fio_parts) > 1 else ""
+    fio_l3 = fio_parts[2] if len(fio_parts) > 2 else ""
+
+    title = TitlePage(
+        inn=taxpayer.inn,
+        kpp=getattr(taxpayer, "kpp", "") or "",
+        correction_number=int(decl.get("correction_number", 0)),
+        tax_period_code=TAX_PERIOD_YEAR,
+        tax_period_year=tax_period_year,
+        ifns_code=taxpayer.ifns_code,
+        at_location_code=LOC_IP_RESIDENCE,
+        taxpayer_name_line1=fio_l1,
+        taxpayer_name_line2=fio_l2,
+        taxpayer_name_line3=fio_l3,
+        phone=getattr(taxpayer, "phone", "") or "",
+        pages_count=4,
+        signing_date=date.today(),
+        object_code=OBJECT_INCOME,
+    )
+
+    def _to_decimal(v: Any) -> Decimal:
+        if v is None:
+            return Decimal("0")
+        if isinstance(v, Decimal):
+            return v
+        return Decimal(str(v))
+
+    s11 = Section_1_1(
+        oktmo_q1=str(s11_raw.get("line_010", "") or getattr(taxpayer, "oktmo", "") or ""),
+        advance_q1=_to_decimal(s11_raw.get("line_020")),
+        advance_h1=_to_decimal(s11_raw.get("line_040")),
+        advance_h1_reduction=_to_decimal(s11_raw.get("line_050")),
+        advance_9m=_to_decimal(s11_raw.get("line_070")),
+        advance_9m_reduction=_to_decimal(s11_raw.get("line_080")),
+        tax_year_payable=_to_decimal(s11_raw.get("line_100")),
+        tax_year_reduction=_to_decimal(s11_raw.get("line_110")),
+    )
+
+    s211 = Section_2_1_1(
+        taxpayer_sign=int(s211_raw.get("line_102", TP_SIGN_IP_NO_EMPLOYEES)),
+        income_q1=_to_decimal(s211_raw.get("line_110")),
+        income_h1=_to_decimal(s211_raw.get("line_111")),
+        income_9m=_to_decimal(s211_raw.get("line_112")),
+        income_y=_to_decimal(s211_raw.get("line_113")),
+        tax_rate_q1=_to_decimal(s211_raw.get("line_120", "6.0")),
+        tax_rate_h1=_to_decimal(s211_raw.get("line_121", "6.0")),
+        tax_rate_9m=_to_decimal(s211_raw.get("line_122", "6.0")),
+        tax_rate_y=_to_decimal(s211_raw.get("line_123", "6.0")),
+        tax_calc_q1=_to_decimal(s211_raw.get("line_130")),
+        tax_calc_h1=_to_decimal(s211_raw.get("line_131")),
+        tax_calc_9m=_to_decimal(s211_raw.get("line_132")),
+        tax_calc_y=_to_decimal(s211_raw.get("line_133")),
+        insurance_q1=_to_decimal(s211_raw.get("line_140")),
+        insurance_h1=_to_decimal(s211_raw.get("line_141")),
+        insurance_9m=_to_decimal(s211_raw.get("line_142")),
+        insurance_y=_to_decimal(s211_raw.get("line_143")),
+    )
+
+    data = DeclarationData(title=title, section_1_1=s11, section_2_1_1=s211)
+
+    filler = PdfOverlayFiller(tax_period_year=tax_period_year)
+    return filler.render(data)
 
 
 render_declaration_pdf = _render_declaration_pdf
