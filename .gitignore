@@ -51,6 +51,6 @@ templates/*/_classification.json
 templates/*/source_page.pdf
 
 # blank.pdf генерируется скриптом make_blank_from_reference.py из source_page.pdf.
-# source_page.pdf уже в .gitignore (содержит ПД). Blank — производный от него и от
-# fields.json, не коммитится.
-templates/*/blank.pdf
+# Это ЧИСТЫЙ бланк без персональных данных — безопасно коммитить в git.
+# Хранится в репо как артефакт для воспроизводимого рендера квитанций.
+# (Не путать с source_page.pdf который СОДЕРЖИТ ПД и находится выше в ignore.)

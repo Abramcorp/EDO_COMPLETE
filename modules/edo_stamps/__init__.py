@@ -250,32 +250,24 @@ def build_receipt_pages(
       - стр. 1: КНД 1166002 «Квитанция о приёме»
       - стр. 2: КНД 1166007 «Извещение о вводе сведений»
 
-    Данные для полей генерируются через receipt_data:
-      - UUID, имя файла, регистрационный номер, таймстампы.
+    Загружает подложки templates/knd_NNNNNNN/blank.pdf и координатные карты
+    templates/knd_NNNNNNN/fields.json, накладывает overlay через reportlab,
+    merge'ит через pypdf (zero-loss).
 
-    TODO: Реализация требует:
-      1. templates/knd_1166002/blank.pdf + fields.json (разметка координат)
-      2. templates/knd_1166007/blank.pdf + fields.json
-      3. Рендер через reportlab canvas + pypdf merge_page на подложки.
-
-    Сейчас возвращает placeholder — 2 пустые A4-страницы с отметкой "TODO".
-    Полная реализация — в Фазе 0c.
+    Данные (UUID, имя файла, регистрационный номер, таймстампы) — генерируются
+    здесь через receipt_data.* функции.
     """
-    from io import BytesIO
-    from pypdf import PdfWriter
-    from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas as rl_canvas
-
     from .receipt_data import (
         compute_receipt_timestamps,
         generate_document_uuid,
         generate_file_name,
         generate_registration_number,
     )
+    from .receipt_renderer import ReceiptRenderData, render_receipt_pages
 
     op_value = operator.value if hasattr(operator, "value") else str(operator)
 
-    # Генерируем все реквизиты один раз — они будут ОДИНАКОВЫМИ на обеих страницах
+    # Генерируем все реквизиты один раз — одни и те же на обеих страницах
     doc_uuid = generate_document_uuid(op_value)  # type: ignore[arg-type]
     file_name = generate_file_name(
         operator=op_value,  # type: ignore[arg-type]
@@ -290,28 +282,38 @@ def build_receipt_pages(
         operator=op_value,  # type: ignore[arg-type]
     )
 
-    # TODO (Фаза 0c): заменить на рендер на PDF-подложках ФНС.
-    # Сейчас placeholder: 2 пустых страницы с текстом-маркером.
-    buf = BytesIO()
-    c = rl_canvas.Canvas(buf, pagesize=A4)
-    for page_name, knd in [
-        ("Квитанция о приёме", "1166002"),
-        ("Извещение о вводе сведений", "1166007"),
-    ]:
-        c.setFont("Helvetica", 14)
-        c.drawString(50, 780, f"[PLACEHOLDER] КНД {knd} — {page_name}")
-        c.setFont("Helvetica", 9)
-        c.drawString(50, 750, f"Налогоплательщик: {taxpayer.fio} (ИНН {taxpayer.inn})")
-        c.drawString(50, 735, f"Налоговый орган: {ifts_info.name}")
-        c.drawString(50, 720, f"Имя файла: {file_name}")
-        c.drawString(50, 705, f"Регистрационный №: {reg_number}")
-        c.drawString(50, 690, f"Представлено: {timestamps.submission.strftime('%d.%m.%Y %H:%M:%S')} MSK")
-        c.drawString(50, 675, f"Принято: {timestamps.acceptance.strftime('%d.%m.%Y %H:%M:%S')} MSK")
-        c.drawString(50, 660, f"Идентификатор: {doc_uuid}")
-        c.drawString(50, 620, "⚠ Placeholder. Реальный рендер — после разметки fields.json (см. ADR-003).")
-        c.showPage()
-    c.save()
-    return buf.getvalue()
+    # Разбиение полного имени ИФНС на 2 строки (как в шаблоне КНД 1166002).
+    # Эвристика: делим примерно пополам по ближайшему пробелу.
+    full = (ifts_info.name or "").strip()
+    if len(full) > 30:
+        mid = len(full) // 2
+        # Ищем ближайший пробел к середине
+        left_space = full.rfind(" ", 0, mid + 10)
+        split_pt = left_space if left_space > 0 else mid
+        line1 = full[:split_pt].rstrip()
+        line2 = full[split_pt:].lstrip()
+    else:
+        line1, line2 = full, ""
+
+    data = ReceiptRenderData(
+        taxpayer_inn=taxpayer.inn,
+        taxpayer_fio=taxpayer.fio,
+        representative_inn="",           # если будем различать представителя — расширить
+        representative_fio="",
+        ifns_code=taxpayer.ifns_code,
+        ifns_full_name_line1=line1,
+        ifns_full_name_line2=line2,
+        ifns_full_name_upper=full.upper(),
+        declaration_knd="1152017",
+        correction_number=correction_number,
+        tax_period_year=tax_period_year,
+        file_name=file_name,
+        submission_datetime=timestamps.submission,
+        acceptance_datetime=timestamps.acceptance,
+        registration_number=reg_number,
+    )
+
+    return render_receipt_pages(data)
 
 
 def assemble_full_package(
