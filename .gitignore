@@ -49,3 +49,8 @@ Thumbs.db
 templates/*/fields_auto.json
 templates/*/_classification.json
 templates/*/source_page.pdf
+
+# blank.pdf генерируется скриптом make_blank_from_reference.py из source_page.pdf.
+# source_page.pdf уже в .gitignore (содержит ПД). Blank — производный от него и от
+# fields.json, не коммитится.
+templates/*/blank.pdf
