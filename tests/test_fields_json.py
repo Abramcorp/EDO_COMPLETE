@@ -176,13 +176,45 @@ class TestFields1166007:
             "representative_inn",
             "ifns_code_header",
             "declarant_fio_and_inn_line",
-            "declaration_name_knd",
+            "declaration_name_line1",       # был declaration_name_knd с неверной Y — разбит на 2 строки
+            "declaration_name_line2",
             "file_name_line1",
             "file_name_line2",
             "ifns_full_name_and_code",
         }
         missing = required - set(fields.keys())
         assert not missing, f"Отсутствуют ключи: {missing}"
+
+    def test_declaration_name_is_multiline(self, fields_1166007):
+        """
+        REGRESSION: в PR #2 было declaration_name_knd с y=587. Реально в эталоне
+        название декларации занимает 2 строки на y≈576 (начало) и y≈567 (продолжение).
+        Из-за неверной Y make_blank не стирал название со стр. blank.pdf.
+        """
+        fields = fields_1166007["pages_def"]["1"]["fields"]
+        assert "declaration_name_line1" in fields, "Название декларации должно быть multiline"
+        assert "declaration_name_line2" in fields
+        assert "declaration_name_knd" not in fields, (
+            "Старое имя declaration_name_knd (PR #2) должно быть удалено — оно имело "
+            "неправильную Y=587"
+        )
+        y1 = fields["declaration_name_line1"]["cells"][0][1]
+        y2 = fields["declaration_name_line2"]["cells"][0][1]
+        assert y1 > y2
+        # line1 на y≈576
+        assert 573 < y1 < 580, f"line1 Y={y1} — ожидается 576±3 (эталон)"
+        # line2 на y≈567
+        assert 563 < y2 < 570, f"line2 Y={y2} — ожидается 567±3 (эталон)"
+
+    def test_ifns_full_name_x_matches_reference(self, fields_1166007):
+        """
+        REGRESSION: в PR #2 было X=170, но реальный текст 'УПРАВЛЕНИЕ ФЕДЕРАЛЬНОЙ...'
+        начинается с X=116.9. make_blank не стирал левую часть строки.
+        """
+        fields = fields_1166007["pages_def"]["1"]["fields"]
+        spec = fields["ifns_full_name_and_code"]
+        x = spec["cells"][0][0]
+        assert 115 < x < 120, f"X={x} — ожидается 116.9±3 (эталон, начало 'УПРАВЛЕНИЕ')"
 
     def test_all_coords_in_a4(self, fields_1166007):
         fields = fields_1166007["pages_def"]["1"]["fields"]
