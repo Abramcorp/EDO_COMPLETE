@@ -43,15 +43,18 @@ _TEMPLATES_DIR = _PROJECT_ROOT / "templates"
 _FONT_REGISTERED = False
 _FONT_NAME = "ReceiptFont"
 _FONT_CANDIDATES = [
-    # Linux/Debian (Railway image)
+    # ПРИОРИТЕТ 1: Tahoma — шрифт эталона ТЕНЗОРа
+    # Тот же шрифт что использует modules/edo_stamps/edo_core.py для штампов,
+    # даёт единообразие со штампом в footer.
+    Path(__file__).resolve().parent / "fonts" / "tahoma.ttf",
+    # ПРИОРИТЕТ 2: Segoe UI — шрифт эталона КОНТУРа
+    Path(__file__).resolve().parent / "fonts" / "segoeui.ttf",
+    # Windows — для разработки если fonts/ отсутствует
+    Path("C:/Windows/Fonts/tahoma.ttf"),
+    Path("C:/Windows/Fonts/arial.ttf"),
+    # Linux fallback (Railway image без нашего fonts/)
     Path("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"),
     Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
-    # edo_stamps fonts (есть в репо, копируется через sync_stamps.sh)
-    Path(__file__).resolve().parent / "fonts" / "segoeui.ttf",
-    Path(__file__).resolve().parent / "fonts" / "tahoma.ttf",
-    # Windows системные — для разработки
-    Path("C:/Windows/Fonts/arial.ttf"),
-    Path("C:/Windows/Fonts/tahoma.ttf"),
 ]
 
 
