@@ -25,7 +25,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas as rl_canvas
 
-from .declaration_data import DeclarationData
+from .declaration_data import DeclarationData, SIGNER_REPRESENTATIVE
 
 
 # ============================================================
@@ -180,12 +180,39 @@ class PdfOverlayFiller:
             "tax_period_year": str(title.tax_period_year),
             "ifns_code": title.ifns_code,
             "at_location_code": title.at_location_code,
-            "taxpayer_name_line1": title.taxpayer_name_line1,
-            "taxpayer_name_line2": title.taxpayer_name_line2,
-            "taxpayer_name_line3": title.taxpayer_name_line3,
-            "taxpayer_name_line4": title.taxpayer_name_line4,
             "phone": title.phone.lstrip("+"),
         }
+
+        # ФИО налогоплательщика — одна строка 40 знакомест.
+        # Собираем из line1..line4 через пробелы, в верхнем регистре
+        # (эталон ТЕНЗОРа пишет ФИО капсом).
+        fio_parts = [
+            title.taxpayer_name_line1,
+            title.taxpayer_name_line2,
+            title.taxpayer_name_line3,
+            title.taxpayer_name_line4,
+        ]
+        fio_full = " ".join(p.strip() for p in fio_parts if p and p.strip())
+        page1["taxpayer_fio_full"] = fio_full.upper()
+
+        # ФИО представителя (signer_type=2) — 3 строки по 40 клеток
+        if title.signer_type == SIGNER_REPRESENTATIVE:
+            page1["signer_name_line1"] = (title.signer_name_line1 or "").upper()
+            page1["signer_name_line2"] = (title.signer_name_line2 or "").upper()
+            page1["signer_name_line3"] = (title.signer_name_line3 or "").upper()
+            # representative_document: "ДОВЕРЕННОСТЬ № N ОТ" + "DD.MM.YYYY"
+            # Если пользователь передал одной строкой — разбиваем по "ОТ"
+            doc = title.representative_document or ""
+            if doc:
+                # Пытаемся разделить "ДОВЕРЕННОСТЬ №2 ОТ 01.07.2025"
+                import re
+                m = re.match(r"^(.*?\bОТ)\s+(\S.*)$", doc, re.IGNORECASE)
+                if m:
+                    page1["representative_document_line1"] = m.group(1).upper()
+                    page1["representative_document_line2"] = m.group(2)
+                else:
+                    page1["representative_document_line1"] = doc.upper()
+
         if title.signing_date:
             page1.update({
                 "signing_date_day": f"{title.signing_date.day:02d}",
