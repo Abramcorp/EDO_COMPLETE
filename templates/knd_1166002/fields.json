@@ -1,0 +1,253 @@
+{
+  "form_version": "1166002",
+  "source": "auto-extracted from reference_tensor_6pages.pdf page 5, manually mapped to logical names",
+  "page_size_pt": [594.96, 841.92],
+  "pages": 1,
+  "fonts": {
+    "primary": {
+      "name": "DeclFont",
+      "registered_as": "DeclFont",
+      "default_size": 8.5
+    }
+  },
+  "pages_def": {
+    "1": {
+      "_comment": "Координаты в reportlab-системе (origin = bottom-left, Y растёт вверх). Все значения в points.",
+
+      "fields": {
+        "_representative_block_top_right": {
+          "_description": "Блок реквизитов декларанта/представителя в правом верхнем углу. Три строки: ФИО, ИНН, служебный текст (ФИО как жирный + ИНН).",
+          "type": "composite"
+        },
+
+        "representative_fio_line1": {
+          "type": "text_line",
+          "cells": [[386.3, 762.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Куприянова Елена Евгеньевна,",
+          "_description": "ФИО налогоплательщика/представителя жирным шрифтом, строка 1."
+        },
+
+        "representative_inn": {
+          "type": "text_line",
+          "cells": [[424.2, 750.8]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "330517711336",
+          "_description": "ИНН представителя/налогоплательщика под ФИО."
+        },
+
+        "title_name": {
+          "type": "text_line",
+          "cells": [[280.6, 680.6]],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "Квитанция",
+          "_description": "КОНСТАНТНОЕ: 'Квитанция' — заголовок. Рендерить не нужно если подложка — уже с текстом."
+        },
+
+        "ifns_full_name": {
+          "type": "text_line",
+          "cells": [[170.0, 634.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "УФНС России по Владимирской области",
+          "_description": "Полное наименование налогового органа (из IftsInfo.name)."
+        },
+
+        "ifns_code_after_name": {
+          "type": "text_line",
+          "cells": [[270.7, 633.8]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "3300)",
+          "_description": "Код ИФНС в скобках после названия. Пример: '(код 3300)'."
+        },
+
+        "declarant_fio_and_inn_line": {
+          "type": "text_line",
+          "cells": [[180.0, 613.4]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Романов Дмитрий Владимирович, 330573397709",
+          "_description": "ФИО декларанта + ИНН в одной строке под 'настоящим документом подтверждает, что'."
+        },
+
+        "declarant_inn_explicit": {
+          "type": "text_line",
+          "cells": [[354.5, 613.4]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "330573397709",
+          "_description": "Отдельно ИНН декларанта — положение внутри строки."
+        },
+
+        "submission_date": {
+          "type": "text_line",
+          "cells": [[148.9, 586.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "24.01.2026",
+          "_description": "Дата представления декларации (ДД.ММ.ГГГГ)."
+        },
+
+        "submission_time": {
+          "type": "text_line",
+          "cells": [[200.4, 586.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "07.49.53",
+          "_description": "Время представления (ЧЧ.ММ.СС через точки)."
+        },
+
+        "declaration_name_and_knd": {
+          "type": "text_line",
+          "cells": [[150.0, 566.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Налоговая декларация по налогу, уплачиваемому в связи с применением упрощенной системы налогообложения (КНД 1152017)",
+          "_description": "Многострочный блок: название декларации + КНД (бывает переносится). Рендерить с wrap."
+        },
+
+        "correction_number": {
+          "type": "text_line",
+          "cells": [[225.0, 556.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "корректирующий (1)",
+          "_description": "Номер корректировки в формате 'корректирующий (N)'. N=0 — первичная."
+        },
+
+        "tax_period_code_and_year": {
+          "type": "text_line",
+          "cells": [[360.0, 566.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "за год, 34, 2025 год",
+          "_description": "Формулировка периода: '34' — код для годового, '2025' — отчётный год."
+        },
+
+        "tax_period_year_only": {
+          "type": "text_line",
+          "cells": [[429.4, 566.2]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "2025",
+          "_description": "Только год (отдельное поле)."
+        },
+
+        "file_name_line1": {
+          "type": "text_line",
+          "cells": [[221.1, 545.8]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "NO_USN_3300_3300_330517711336_20260124_12d6c8ca-4bf8-4d",
+          "_description": "Имя файла — часть 1 (до 50 символов). Длинный UUID обрезается и переносится."
+        },
+
+        "file_name_line2": {
+          "type": "text_line",
+          "cells": [[221.1, 536.7]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "f5-a370-ce44469d1650",
+          "_description": "Имя файла — продолжение (окончание UUID)."
+        },
+
+        "ifns_code_reception": {
+          "type": "text_line",
+          "cells": [[435.7, 516.2]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "3300)",
+          "_description": "Код ИФНС при приёме (во второй фразе 'в налоговый орган')."
+        },
+
+        "reception_date": {
+          "type": "text_line",
+          "cells": [[166.7, 496.5]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "24.01.2026",
+          "_description": "Дата поступления декларации в налоговый орган."
+        },
+
+        "acceptance_date": {
+          "type": "text_line",
+          "cells": [[255.0, 496.5]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "24.01.2026",
+          "_description": "Дата принятия декларации (может совпадать с reception_date)."
+        },
+
+        "registration_number": {
+          "type": "text_line",
+          "cells": [[237.0, 485.9]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "00000000002774176425",
+          "_description": "Регистрационный номер (20 цифр с 8 ведущими нулями)."
+        },
+
+        "stamp_document_uuid": {
+          "type": "text_line",
+          "cells": [[438.1, 52.2]],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "05fc595c-a533-4b4f-ae26-d3e56caae3d9",
+          "_description": "UUID документа в подвале страницы (для штампа оператора ЭДО). Рендерится только если есть штампы."
+        },
+
+        "stamp_ifts_datetime": {
+          "type": "text_line",
+          "cells": [[329.4, 33.2]],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "24.01.26 08:23",
+          "_description": "Время принятия ИФНС для штампа (короткий формат 'ДД.ММ.ГГ ЧЧ:ММ (MSK)')."
+        },
+
+        "stamp_ifts_cert": {
+          "type": "text_line",
+          "cells": [[438.5, 33.2]],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "00FC3E4CEBFB202C12C14094B382D3FAC9",
+          "_description": "Сертификат начальника ИФНС (hex uppercase) в штампе."
+        }
+      },
+
+      "_static_fields": {
+        "_note": "Эти поля считаются константными — они есть на blank.pdf и переносить их не нужно. Приведены для справки.",
+        "form_knd_code": {"cells": [[492.9, 800.8]], "value": "1166002"},
+        "receipt_title_line1": {"cells": [[280.6, 680.6]], "value": "Квитанция"},
+        "receipt_title_line2": {"cells": [[165.0, 671.5]], "value": "о приеме налоговой декларации (расчета)"},
+        "receipt_title_line3": {"cells": [[275.0, 662.3]], "value": "в электронном виде"},
+        "label_ifns": {"cells": [[90.6, 634.0]], "value": "Налоговый орган"},
+        "label_represented_by": {"cells": [[100.0, 604.0]], "value": "представил(а)"},
+        "label_in_file": {"cells": [[90.6, 545.8]], "value": "в файле"},
+        "label_registration_number": {"cells": [[90.6, 485.9]], "value": "регистрационный номер"}
+      }
+    }
+  },
+
+  "_implementation_notes": {
+    "rendering": [
+      "1. Открыть templates/knd_1166002/blank.pdf (нужно ещё создать: очистить source_page.pdf от заполненных значений)",
+      "2. Построить reportlab overlay: для каждого ключа в fields перерисовать текст в указанных координатах",
+      "3. Merge overlay с blank через pypdf PdfWriter.merge_page (zero-loss)",
+      "4. Штампы footer (stamp_document_uuid, stamp_ifts_datetime, stamp_ifts_cert) накладываются edo_core.apply_stamps — НЕ через этот fields.json"
+    ],
+    "pixel_diff_test": [
+      "Эталон: templates/_user_reference/reference_tensor_6pages.pdf, страница 5 (индекс 4)",
+      "Tolerance: <=30 px для всей страницы при 150 DPI (больше чем для декларации из-за сложной вёрстки)",
+      "Значения для тестового прогона: см. ADR-003 + таблицу в _user_reference/README.md"
+    ],
+    "known_gaps": [
+      "ifns_full_name — извлечено побитово, нужно собирать из нескольких words в один текст-блок при рендере",
+      "declaration_name_and_knd — длинный текст, может переноситься. Тестировать на разных ifns_info.name"
+    ]
+  }
+}

@@ -4,101 +4,66 @@
 
 Добавляется в итоговый PDF как страница 5 (см. ADR-003).
 
-## Что должно быть в этой директории
+## Статус
 
-```
-knd_1166002/
-├── blank.pdf              ← чистый бланк ФНС формы 1166002 (A4, 1 страница)
-├── fields.json            ← координатная карта полей для reportlab overlay
-└── reference/             ← эталоны для pixel-diff
-    ├── sample_01_input.json
-    ├── sample_01_expected.pdf
-    └── sample_01_expected.png
-```
+| Артефакт | Статус | Комментарий |
+|---|---|---|
+| `source_page.pdf` | ✅ есть | Извлечено из эталона Тензора (заполненное) |
+| `fields_auto.json` | ✅ есть | 165 координат автоматически через pdfplumber |
+| `fields.json` | ✅ есть | Боевая разметка, 22 logical-поля |
+| `blank.pdf` | 🟡 TODO | Нужно очистить source_page.pdf от значений |
+| Реальный рендер (замена placeholder) | 🟡 TODO | Связано с blank.pdf |
+| Pixel-diff тест | 🟡 TODO | Запускать на reference_tensor_6pages.pdf page 5 |
 
-## Где взять blank.pdf
+## Поля в fields.json
 
-Вариант А — скачать с nalog.ru:
-  - Поиск: «КНД 1166002 квитанция о приёме налоговой декларации в электронном виде»
-  - Формат: чистый бланк, 1 страница A4
+Динамические (рендерятся из данных):
+- `representative_fio_line1` + `representative_inn` — реквизиты декларанта справа вверху
+- `ifns_full_name` + `ifns_code_after_name` — данные налогового органа
+- `declarant_fio_and_inn_line` + `declarant_inn_explicit` — ФИО + ИНН в основной фразе
+- `submission_date` + `submission_time` — когда представлена декларация
+- `declaration_name_and_knd` — название декларации
+- `correction_number` — "корректирующий (N)"
+- `tax_period_code_and_year` + `tax_period_year_only` — период и год
+- `file_name_line1` + `file_name_line2` — имя файла (переносится)
+- `ifns_code_reception` — код ИФНС при приёме
+- `reception_date` + `acceptance_date` — даты поступления/принятия
+- `registration_number` — регистрационный номер
+- `stamp_document_uuid` + `stamp_ifts_datetime` + `stamp_ifts_cert` — для штампа footer
 
-Вариант Б — извлечь из эталона `Романов_УСН_2025.pdf` через `pdfplumber`:
-  ```python
-  import pdfplumber
-  from pypdf import PdfReader, PdfWriter
-  r = PdfReader("Романов_УСН_2025.pdf")
-  w = PdfWriter()
-  w.add_page(r.pages[4])  # страница 5 (индекс 4) — это КНД 1166002
-  with open("page5.pdf", "wb") as f:
-      w.write(f)
-  # затем очистить поля вручную (или через OCR-замену белым прямоугольником)
-  ```
+Статические (часть формы, уже на blank.pdf, рендерить не нужно):
+- `form_knd_code`, `receipt_title_line{1..3}`, `label_*` — см. `_static_fields` в JSON
 
-Вариант Б даёт pixel-perfect совпадение с эталоном, но требует ручной очистки заполненных полей.
+## Получение blank.pdf
 
-## Формат fields.json
+**Вариант А: очистить source_page.pdf программно.**
+Скрипт `scripts/make_blank_from_reference.py` (TODO) накладывает белые прямоугольники на координаты динамических полей, превращая заполненный PDF в чистый бланк.
 
-Аналогично `templates/knd_1152017/fields_YYYY.json` (см. ADR-002):
+**Вариант Б: скачать с nalog.ru.**
+Найти приказ ФНС, скачать форму КНД 1166002 как PDF. Минус — может не совпасть пиксельно с эталоном ТЕНЗОРа.
+
+Рекомендую А — тогда pixel-diff будет работать на 100%.
+
+## Тестовые значения
+
+Взять из эталона `reference_tensor_6pages.pdf`:
 
 ```json
 {
-  "form_version": "1166002",
-  "pages": 1,
-  "fonts": {
-    "primary": {"name": "DeclFont", "size": 10}
-  },
-  "pages_def": {
-    "1": {
-      "fields": {
-        "taxpayer_short": {
-          "type": "text_line",
-          "cells": [[x, y]],
-          "align": "left"
-        },
-        "taxpayer_inn": { ... },
-        "ifns_full_name": { ... },
-        "ifns_code": { ... },
-        "declarant_fio": { ... },
-        "declarant_inn": { ... },
-        "submission_date": {"type": "text_line", "cells": [[x, y]]},
-        "submission_time": { ... },
-        "declaration_name": { ... },
-        "correction_number": { ... },
-        "tax_period_code": { ... },
-        "tax_period_year": { ... },
-        "file_name_line1": {"type": "text_line", "cells": [[x, y]]},
-        "file_name_line2": { ... },
-        "reception_date": { ... },
-        "acceptance_date": { ... },
-        "registration_number": { ... }
-      }
-    }
-  }
+  "representative_fio_line1": "Куприянова Елена Евгеньевна,",
+  "representative_inn": "330517711336",
+  "ifns_full_name": "УФНС России по Владимирской области",
+  "ifns_code_after_name": "3300)",
+  "declarant_fio_and_inn_line": "Романов Дмитрий Владимирович, 330573397709",
+  "submission_date": "24.01.2026",
+  "submission_time": "07.49.53",
+  "declaration_name_and_knd": "Налоговая декларация по налогу, уплачиваемому в связи с применением упрощенной системы налогообложения (КНД 1152017)",
+  "correction_number": "корректирующий (1)",
+  "tax_period_year_only": "2025",
+  "file_name_line1": "NO_USN_3300_3300_330517711336_20260124_12d6c8ca-4bf8-4d",
+  "file_name_line2": "f5-a370-ce44469d1650",
+  "reception_date": "24.01.2026",
+  "acceptance_date": "24.01.2026",
+  "registration_number": "00000000002774176425"
 }
 ```
-
-## Список полей, которые должен заполнить рендерер
-
-Из эталона ТЕНЗОР (страница 5):
-
-| Поле | Источник данных |
-|---|---|
-| Реквизиты справа-вверху (декларант) | `taxpayer.fio + taxpayer.inn` |
-| Налоговый орган | `ifts_info.name + "(код " + ifns_code + ")"` |
-| Полное имя налогоплательщика | `taxpayer.fio + ", " + taxpayer.inn` |
-| Дата/время представления | `receipt_data.timestamps.submission` |
-| Наименование декларации | константа "Налоговая декларация по налогу..." |
-| КНД | константа "1152017" |
-| Номер корректировки | из DeclarationRequest |
-| Отчётный период | "34" (год) |
-| Отчётный год | `tax_period_year` |
-| Имя файла | `receipt_data.file_name` |
-| Дата поступления | `receipt_data.timestamps.submission.date()` |
-| Дата принятия | `receipt_data.timestamps.acceptance.date()` |
-| Регистрационный номер | `receipt_data.registration_number` |
-
-## Статус
-
-🟡 **Phase 0c.1 pending:** bold.pdf + fields.json требуют ручной разметки координат.
-
-Сейчас рендер использует placeholder в `edo_stamps/__init__.py::build_receipt_pages`.
