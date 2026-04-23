@@ -28,9 +28,9 @@ class TestBlank2025:
         assert BLANK_2025.exists(), f"Должен существовать: {BLANK_2025}"
 
     def test_size_reasonable(self):
-        """Raster blank должен быть >50KB и <1MB."""
+        """Raster blank со статическими лейблами: >100KB и <3MB."""
         size_kb = BLANK_2025.stat().st_size / 1024
-        assert 50 < size_kb < 1000, f"Размер {size_kb:.0f} KB вне диапазона 50-1000 KB"
+        assert 100 < size_kb < 3000, f"Размер {size_kb:.0f} KB вне диапазона 100-3000 KB"
 
     def test_has_4_pages(self, blank_reader):
         """Декларация КНД 1152017 УСН-доходы для ИП = 4 страницы."""
