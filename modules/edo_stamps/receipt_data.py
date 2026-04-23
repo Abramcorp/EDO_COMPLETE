@@ -17,11 +17,20 @@ import random
 import re
 import secrets
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Literal
-from zoneinfo import ZoneInfo
 
-MSK = ZoneInfo("Europe/Moscow")
+try:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+    try:
+        MSK = ZoneInfo("Europe/Moscow")
+    except ZoneInfoNotFoundError:
+        # Windows без pip-пакета tzdata — fallback на фиксированный оффсет.
+        # МСК = UTC+3 без перехода на летнее время с 2014 года, так что безопасно.
+        MSK = timezone(timedelta(hours=3), name="MSK")
+except ImportError:
+    # Совсем старый Python без zoneinfo
+    MSK = timezone(timedelta(hours=3), name="MSK")
 
 
 # ============================================================
