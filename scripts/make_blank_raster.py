@@ -54,10 +54,16 @@ from reportlab.lib.utils import ImageReader
 # Чтение fields.json — только динамические поля
 # ============================================================
 
-def _iter_dynamic_fields(fields_json: dict):
-    """Динамические поля (те, что надо стирать) из fields.json."""
+def _iter_dynamic_fields(fields_json: dict, only_page: str | None = None):
+    """Динамические поля (те, что надо стирать) из fields.json.
+
+    Args:
+        only_page: если задано, только поля этой страницы pages_def (например, "1").
+    """
     pages_def = fields_json.get("pages_def", {})
     for page_num, page_def in pages_def.items():
+        if only_page is not None and page_num != only_page:
+            continue
         fields = page_def.get("fields", {})
         for key, spec in fields.items():
             if key.startswith("_"):
@@ -113,8 +119,14 @@ def build_raster_blank(
     out_path: Path,
     dpi: int = 200,
     padding: float = 3.0,
+    page_key: str | None = None,
 ) -> dict:
-    """Растровый blank.pdf. Возвращает статистику."""
+    """Растровый blank.pdf. Возвращает статистику.
+
+    Args:
+        page_key: если fields.json имеет pages_def с несколькими страницами,
+            передай ключ (например "1") чтобы стирать только поля этой страницы.
+    """
     # 1. Растеризуем source_page в PIL Image
     source_bytes = source_path.read_bytes()
     pdf = pdfium.PdfDocument(source_bytes)
@@ -136,7 +148,7 @@ def build_raster_blank(
     draw = ImageDraw.Draw(img)
 
     erased_count = 0
-    for _pnum, _key, spec in _iter_dynamic_fields(fields_data):
+    for _pnum, _key, spec in _iter_dynamic_fields(fields_data, only_page=page_key):
         x0_pt, y0_pt, x1_pt, y1_pt = _field_bbox_pt(spec, padding)
 
         # reportlab-coords (origin bottom-left) → PIL-coords (origin top-left)
@@ -191,6 +203,8 @@ def main() -> int:
     parser.add_argument("--dpi", type=int, default=200,
                         help="разрешение растеризации (default: 200)")
     parser.add_argument("--padding", type=float, default=3.0)
+    parser.add_argument("--page-key", type=str, default=None,
+                        help="если fields.json имеет multi-page pages_def, выбирает одну страницу (например '1')")
     args = parser.parse_args()
 
     if not args.source.exists():
@@ -203,7 +217,7 @@ def main() -> int:
     try:
         stats = build_raster_blank(
             args.source, args.fields, args.out,
-            dpi=args.dpi, padding=args.padding,
+            dpi=args.dpi, padding=args.padding, page_key=args.page_key,
         )
     except Exception as e:
         print(f"❌ Ошибка: {e}", file=sys.stderr)

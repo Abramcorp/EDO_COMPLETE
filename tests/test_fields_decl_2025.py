@@ -222,3 +222,142 @@ class TestReferenceDataAlignment:
         assert p1["signing_date_day"]["sample_value"] == "24"
         assert p1["signing_date_month"]["sample_value"] == "01"
         assert p1["signing_date_year"]["sample_value"] == "2026"
+
+
+# ============================================================
+# Страницы 2, 3, 4 — разметка разделов декларации
+# ============================================================
+
+class TestPage2_Section_1_1:
+    """Р.1.1 — УСН-доходы, суммы налога."""
+
+    def _p2(self, fields):
+        return fields["pages_def"]["2"]["fields"]
+
+    def test_page_2_defined(self, fields):
+        assert "2" in fields["pages_def"]
+
+    def test_header_fields_present(self, fields):
+        """Колонтитул на всех data-страницах: ИНН, КПП, номер страницы."""
+        f = self._p2(fields)
+        for key in ("inn_header", "kpp_header", "page_number_header"):
+            assert key in f
+
+    def test_page_number_is_002(self, fields):
+        assert self._p2(fields)["page_number_header"]["sample_value"] == "002"
+
+    def test_has_all_oktmo_fields(self, fields):
+        """4 позиции ОКТМО (для квартала, полугодия, 9мес, года)."""
+        f = self._p2(fields)
+        for key in ("oktmo_q1", "oktmo_h1", "oktmo_9m", "oktmo_y"):
+            assert key in f, f"Отсутствует {key}"
+            assert len(f[key]["cells"]) == 11, f"{key} должен иметь 11 клеток"
+
+    def test_has_advance_payment_fields(self, fields):
+        f = self._p2(fields)
+        for key in (
+            "advance_q1",
+            "advance_h1", "advance_h1_reduction",
+            "advance_9m", "advance_9m_reduction",
+            "tax_year_payable", "tax_year_reduction",
+        ):
+            assert key in f, f"Отсутствует {key}"
+            assert len(f[key]["cells"]) == 12, f"{key}: ожидается 12 клеток (сумма)"
+            assert f[key]["align"] == "right", f"{key} должен быть выровнен вправо"
+
+
+class TestPage3_Section_2_1_1:
+    """Р.2.1.1 — расчёт налога УСН-доходы."""
+
+    def _p3(self, fields):
+        return fields["pages_def"]["3"]["fields"]
+
+    def test_page_3_defined(self, fields):
+        assert "3" in fields["pages_def"]
+        assert self._p3(fields)["page_number_header"]["sample_value"] == "003"
+
+    def test_has_income_quarterly_fields(self, fields):
+        """Доходы по кварталам — 4 поля."""
+        f = self._p3(fields)
+        for key in ("income_q1", "income_h1", "income_9m", "income_y"):
+            assert key in f
+            assert len(f[key]["cells"]) == 12
+
+    def test_has_tax_rate_fields(self, fields):
+        """Ставки налога — 4 поля."""
+        f = self._p3(fields)
+        for key in ("tax_rate_q1", "tax_rate_h1", "tax_rate_9m", "tax_rate_y"):
+            assert key in f
+            assert len(f[key]["cells"]) == 4, f"{key}: 4 клетки для '6.0'"
+
+    def test_has_tax_calc_fields(self, fields):
+        """Исчисленный налог."""
+        f = self._p3(fields)
+        for key in ("tax_calc_q1", "tax_calc_h1", "tax_calc_9m", "tax_calc_y"):
+            assert key in f
+            assert len(f[key]["cells"]) == 12
+
+    def test_taxpayer_sign_1_cell(self, fields):
+        assert len(self._p3(fields)["taxpayer_sign"]["cells"]) == 1
+
+    def test_reference_income_values(self, fields):
+        """sample_values для income — из эталона (409517 для 9мес и года)."""
+        f = self._p3(fields)
+        assert f["income_9m"]["sample_value"] == "409517"
+        assert f["income_y"]["sample_value"] == "409517"
+
+
+class TestPage4_Section_2_1_1_Continued:
+    """Р.2.1.1 (продолжение) — страховые взносы."""
+
+    def _p4(self, fields):
+        return fields["pages_def"]["4"]["fields"]
+
+    def test_page_4_defined(self, fields):
+        assert "4" in fields["pages_def"]
+        assert self._p4(fields)["page_number_header"]["sample_value"] == "004"
+
+    def test_has_insurance_fields(self, fields):
+        f = self._p4(fields)
+        for key in ("insurance_q1", "insurance_h1", "insurance_9m", "insurance_y"):
+            assert key in f
+            assert len(f[key]["cells"]) == 12
+            assert f[key]["align"] == "right"
+
+    def test_reference_insurance_values(self, fields):
+        """В эталоне: взносы 9мес=24571, годовые=24571."""
+        f = self._p4(fields)
+        assert f["insurance_9m"]["sample_value"] == "24571"
+        assert f["insurance_y"]["sample_value"] == "24571"
+
+
+class TestAllPagesConsistency:
+    """Общие проверки по всем 4 страницам."""
+
+    def test_every_page_has_header(self, fields):
+        """Страницы 2-4 должны иметь колонтитул ИНН/КПП/№стр."""
+        for page in ("2", "3", "4"):
+            fs = fields["pages_def"][page]["fields"]
+            assert "inn_header" in fs, f"Стр.{page} без inn_header"
+            assert "kpp_header" in fs
+            assert "page_number_header" in fs
+
+    def test_inn_header_consistent_y_across_pages(self, fields):
+        """ИНН в колонтитуле — одна Y на всех стр. 2-4."""
+        ys = set()
+        for page in ("2", "3", "4"):
+            y = fields["pages_def"][page]["fields"]["inn_header"]["cells"][0][1]
+            ys.add(round(y, 1))
+        assert len(ys) == 1, f"inn_header на разных Y: {ys}"
+
+    def test_all_coords_in_a4_all_pages(self, fields):
+        A4_W, A4_H = 595.0, 842.0
+        for page_num, page_def in fields["pages_def"].items():
+            for key, spec in page_def.get("fields", {}).items():
+                if key.startswith("_"):
+                    continue
+                for cell in spec.get("cells", []):
+                    x, y = cell
+                    assert 0 <= x <= A4_W, f"стр.{page_num}/{key}: X={x}"
+                    assert 0 <= y <= A4_H, f"стр.{page_num}/{key}: Y={y}"
+
