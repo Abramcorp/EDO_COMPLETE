@@ -42,3 +42,10 @@ Thumbs.db
 
 # Но не исключаем ассеты шаблонов
 !/templates/**
+
+# Артефакты автоматической разметки координат — генерируются
+# скриптом extract_fields_from_reference.py, не должны быть в git.
+# Результат ручной доработки — в fields.json
+templates/*/fields_auto.json
+templates/*/_classification.json
+templates/*/source_page.pdf

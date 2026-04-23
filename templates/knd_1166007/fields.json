@@ -1,0 +1,192 @@
+{
+  "form_version": "1166007",
+  "source": "auto-extracted from reference_tensor_6pages.pdf page 6, manually mapped to logical names",
+  "page_size_pt": [594.96, 841.92],
+  "pages": 1,
+  "fonts": {
+    "primary": {
+      "name": "DeclFont",
+      "registered_as": "DeclFont",
+      "default_size": 8.5
+    }
+  },
+  "pages_def": {
+    "1": {
+      "_comment": "Координаты в reportlab-системе (origin = bottom-left). Форма 1166007 имеет меньше полей чем 1166002 — только подтверждение что декларация принята без ошибок.",
+
+      "fields": {
+        "representative_fio_line1": {
+          "type": "text_line",
+          "cells": [[373.0, 738.1]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Куприянова Елена Евгеньевна,",
+          "_description": "ФИО представителя/декларанта в правом верхнем углу."
+        },
+
+        "representative_inn": {
+          "type": "text_line",
+          "cells": [[413.3, 726.8]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "330517711336",
+          "_description": "ИНН представителя."
+        },
+
+        "ifns_code_header": {
+          "type": "text_line",
+          "cells": [[244.3, 629.6]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "3300",
+          "_description": "Код налогового органа (в начале текста 'Налоговый орган <код> настоящим документом...')."
+        },
+
+        "declarant_fio_and_inn_line": {
+          "type": "text_line",
+          "cells": [[140.0, 609.2]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "РОМАНОВ ДМИТРИЙ ВЛАДИМИРОВИЧ, 330573397709",
+          "_description": "Полное наименование/ФИО декларанта + ИНН (в эталоне — заглавными буквами). Длинная строка с wrap при необходимости."
+        },
+
+        "declarant_inn_explicit": {
+          "type": "text_line",
+          "cells": [[368.1, 609.2]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "330573397709",
+          "_description": "Отдельно ИНН декларанта в той же строке."
+        },
+
+        "declaration_name_knd": {
+          "type": "text_line",
+          "cells": [[150.0, 587.0]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Налоговая декларация по налогу, уплачиваемому в связи с применением упрощенной системы налогообложения 1152017",
+          "_description": "Название декларации + КНД. Много символов, возможно wrap."
+        },
+
+        "correction_and_period": {
+          "type": "text_line",
+          "cells": [[150.0, 566.9]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "корректирующий (1), за год, 2025 год",
+          "_description": "Строка 'корректирующий (N), за <период>, <год> год'."
+        },
+
+        "correction_number_only": {
+          "type": "text_line",
+          "cells": [[283.6, 566.9]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "корректирующий (1)",
+          "_description": "Только часть 'корректирующий (N)' если нужно отдельно."
+        },
+
+        "tax_period_year_only": {
+          "type": "text_line",
+          "cells": [[410.0, 566.9]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "2025",
+          "_description": "Отчётный год."
+        },
+
+        "file_name_line1": {
+          "type": "text_line",
+          "cells": [[179.9, 534.5]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "NO_USN_3300_3300_330517711336_20260124_12d6c8ca-4bf8-4d",
+          "_description": "Имя файла — часть 1 (до 50 символов)."
+        },
+
+        "file_name_line2": {
+          "type": "text_line",
+          "cells": [[179.9, 525.3]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "f5-a370-ce44469d1650",
+          "_description": "Имя файла — продолжение."
+        },
+
+        "ifns_full_name_and_code": {
+          "type": "text_line",
+          "cells": [[170.0, 414.8]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "УПРАВЛЕНИЕ ФЕДЕРАЛЬНОЙ НАЛОГОВОЙ СЛУЖБЫ ПО ВЛАДИМИРСКОЙ ОБЛАСТИ, 3300",
+          "_description": "Полное наименование налогового органа + код внизу страницы (в поле 'наименование, код налогового органа')."
+        },
+
+        "ifns_code_footer": {
+          "type": "text_line",
+          "cells": [[480.2, 414.8]],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "3300",
+          "_description": "Код налогового органа отдельно в конце строки ifns_full_name_and_code."
+        },
+
+        "stamp_document_uuid": {
+          "type": "text_line",
+          "cells": [[438.1, 52.2]],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "05fc595c-a533-4b4f-ae26-d3e56caae3d9",
+          "_description": "UUID документа в подвале (для штампа оператора ЭДО)."
+        },
+
+        "stamp_ifts_datetime": {
+          "type": "text_line",
+          "cells": [[329.4, 33.2]],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "24.01.26 08:26",
+          "_description": "Время принятия для штампа ИФНС в footer. Обычно чуть позже chem на КНД 1166002."
+        },
+
+        "stamp_ifts_cert": {
+          "type": "text_line",
+          "cells": [[438.5, 33.2]],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "00FC3E4CEBFB202C12C14094B382D3FAC9",
+          "_description": "Сертификат руководителя ИФНС (hex uppercase)."
+        }
+      },
+
+      "_static_fields": {
+        "_note": "Эти поля — часть blank.pdf (уже напечатаны в форме), рендерить не нужно.",
+        "form_knd_code": {"cells": [[492.9, 809.2]], "value": "1166007"},
+        "label_ifns_stamp": {"cells": [[90.6, 771.9]], "value": "место штампа налогового органа"},
+        "title_line1": {"cells": [[110.5, 658.1]], "value": "Извещение о вводе сведений, указанных в налоговой декларации (расчете)"},
+        "title_line2": {"cells": [[260.9, 648.9]], "value": "в электронной форме"},
+        "label_tax_authority": {"cells": [[90.6, 629.6]], "value": "Налоговый орган"},
+        "label_no_errors": {"cells": [[150.0, 460.0]], "value": "не содержится ошибок (противоречий)."}
+      }
+    }
+  },
+
+  "_implementation_notes": {
+    "rendering": [
+      "1. Открыть templates/knd_1166007/blank.pdf",
+      "2. Рендерить только динамические поля из fields через reportlab overlay",
+      "3. Merge с подложкой через pypdf",
+      "4. Штампы footer (stamp_*) накладываются edo_core.apply_stamps отдельно"
+    ],
+    "pixel_diff_test": [
+      "Эталон: templates/_user_reference/reference_tensor_6pages.pdf, page 6 (index 5)",
+      "Tolerance: <=30 px при 150 DPI (меньше полей — проще совпадение)",
+      "Входные данные — см. tests/test_fields_json.py::TestFields1166007"
+    ],
+    "known_gaps": [
+      "declarant_fio_and_inn_line — в эталоне ЗАГЛАВНЫМИ буквами, в отличие от 1166002 где смешанный регистр. Рендерер должен знать куда upper-case",
+      "ifns_full_name_and_code — тоже заглавными"
+    ]
+  }
+}
