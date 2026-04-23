@@ -139,7 +139,15 @@ def _split_filename(filename: str, first_line_len: int = 54) -> tuple[str, str]:
 # ============================================================
 
 def _values_for_1166002(data: ReceiptRenderData) -> dict[str, str]:
-    """Преобразует DTO в dict {field_name: value} для рендера."""
+    """Преобразует DTO в dict {field_name: value} для рендера.
+
+    ВАЖНО: fields.json содержит некоторые перекрывающиеся поля (например
+    declarant_inn_explicit — подмножество declarant_fio_and_inn_line).
+    Писать оба — получится двойной текст. Поэтому здесь мы заполняем
+    ТОЛЬКО основные поля, а перекрывающиеся (_explicit, _only) оставляем
+    пустыми — они могут заполняться для других случаев, но для стандартного
+    ТЕНЗОР-эталона их не нужно писать.
+    """
     rep_fio = data.representative_fio or data.taxpayer_fio
     rep_inn = data.representative_inn or data.taxpayer_inn
 
@@ -155,7 +163,7 @@ def _values_for_1166002(data: ReceiptRenderData) -> dict[str, str]:
         "ifns_full_name_line2": data.ifns_full_name_line2,
         "ifns_code_after_name": f"{data.ifns_code})",
         "declarant_fio_and_inn_line": f"{data.taxpayer_fio}, {data.taxpayer_inn}",
-        "declarant_inn_explicit": data.taxpayer_inn,
+        # declarant_inn_explicit: НЕ пишем — дублирует конец declarant_fio_and_inn_line
         "submission_date": submit.strftime("%d.%m.%Y") if submit else "",
         "submission_time": submit.strftime("%H.%M.%S") if submit else "",
         "declaration_name_and_knd": (
@@ -164,18 +172,18 @@ def _values_for_1166002(data: ReceiptRenderData) -> dict[str, str]:
         ),
         "correction_number": f"корректирующий ({data.correction_number})",
         "tax_period_code_and_year": f"за год, 34, {data.tax_period_year} год",
-        "tax_period_year_only": str(data.tax_period_year),
+        # tax_period_year_only: НЕ пишем — входит в tax_period_code_and_year
         "file_name_line1": file_line1,
         "file_name_line2": file_line2,
         "ifns_code_reception": f"{data.ifns_code})",
         "reception_date": submit.strftime("%d.%m.%Y") if submit else "",
         "acceptance_date": accept.strftime("%d.%m.%Y") if accept else "",
         "registration_number": data.registration_number,
-        # Поля штампа (stamp_*) — не заполняем здесь, их пишет apply_stamps
     }
 
 
 def _values_for_1166007(data: ReceiptRenderData) -> dict[str, str]:
+    """См. docstring _values_for_1166002 про избегание дублей."""
     rep_fio = data.representative_fio or data.taxpayer_fio
     rep_inn = data.representative_inn or data.taxpayer_inn
     file_line1, file_line2 = _split_filename(data.file_name)
@@ -185,7 +193,7 @@ def _values_for_1166007(data: ReceiptRenderData) -> dict[str, str]:
         "representative_inn": rep_inn,
         "ifns_code_header": data.ifns_code,
         "declarant_fio_and_inn_line": f"{data.taxpayer_fio}, {data.taxpayer_inn}",
-        "declarant_inn_explicit": data.taxpayer_inn,
+        # declarant_inn_explicit: НЕ пишем — дублирует хвост declarant_fio_and_inn_line
         "declaration_name_line1": (
             "Налоговая декларация по налогу, уплачиваемому в связи с применением упрощенной системы"
         ),
@@ -193,12 +201,11 @@ def _values_for_1166007(data: ReceiptRenderData) -> dict[str, str]:
             f"налогообложения {data.declaration_knd}, корректирующий ({data.correction_number}), "
             f"за год, {data.tax_period_year} год"
         ),
-        "correction_number_only": f"корректирующий ({data.correction_number})",
-        "tax_period_year_only": str(data.tax_period_year),
+        # correction_number_only, tax_period_year_only: НЕ пишем — входят в declaration_name_line2
         "file_name_line1": file_line1,
         "file_name_line2": file_line2,
         "ifns_full_name_and_code": f"{data.ifns_full_name_upper}, {data.ifns_code}",
-        "ifns_code_footer": data.ifns_code,
+        # ifns_code_footer: НЕ пишем — дублирует конец ifns_full_name_and_code
     }
 
 
@@ -270,21 +277,25 @@ def _render_overlay(
 
 
 def _render_page(knd: str, values: dict[str, str]) -> bytes:
-    """Ядро: подложка blank + overlay → готовая страница."""
+    """Ядро: подложка blank + overlay → готовая страница.
+
+    Использует PdfWriter(clone_from=...) + writer.pages[0].merge_page()
+    вместо старого паттерна PageObject.merge_page + replace_contents
+    (deprecated в pypdf 6+).
+    """
     blank_bytes = _load_blank(knd)
     fields_data = _load_fields(knd)
 
     blank_reader = PdfReader(BytesIO(blank_bytes))
-    base_page = blank_reader.pages[0]
-    page_w = float(base_page.mediabox.width)
-    page_h = float(base_page.mediabox.height)
+    page_w = float(blank_reader.pages[0].mediabox.width)
+    page_h = float(blank_reader.pages[0].mediabox.height)
 
     overlay_bytes = _render_overlay(fields_data, values, page_w, page_h)
     overlay_reader = PdfReader(BytesIO(overlay_bytes))
 
-    writer = PdfWriter()
-    base_page.merge_page(overlay_reader.pages[0])
-    writer.add_page(base_page)
+    # PdfWriter(clone_from=...) — рекомендованный pypdf 6+ API
+    writer = PdfWriter(clone_from=blank_reader)
+    writer.pages[0].merge_page(overlay_reader.pages[0])
 
     out = BytesIO()
     writer.write(out)
