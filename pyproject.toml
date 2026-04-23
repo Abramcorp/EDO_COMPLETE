@@ -1,0 +1,17 @@
+[project]
+name = "usn_complete"
+version = "0.1.0"
+description = "Единый пайплайн: декларация УСН 6% + штампы ЭДО"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "UP", "RUF"]
+ignore = ["E501"]  # длина строки — через line-length
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

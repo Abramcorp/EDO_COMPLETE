@@ -1,0 +1,1997 @@
+{
+  "pages": 1,
+  "pages_def": {
+    "1": {
+      "fields": {
+        "КНД": {
+          "type": "text_line",
+          "cells": [
+            [
+              473.85,
+              800.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "КНД"
+        },
+        "1166002": {
+          "type": "text_line",
+          "cells": [
+            [
+              492.95,
+              800.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "1166002"
+        },
+        "место": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              790.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "место"
+        },
+        "штампа": {
+          "type": "text_line",
+          "cells": [
+            [
+              116.2,
+              790.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "штампа"
+        },
+        "налогового": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              781.05
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "налогового"
+        },
+        "органа": {
+          "type": "text_line",
+          "cells": [
+            [
+              136.38,
+              781.05
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "органа"
+        },
+        "Куприянова": {
+          "type": "text_line",
+          "cells": [
+            [
+              386.29,
+              762.03
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Куприянова"
+        },
+        "Елена": {
+          "type": "text_line",
+          "cells": [
+            [
+              438.95,
+              762.03
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Елена"
+        },
+        "Евгеньевна,": {
+          "type": "text_line",
+          "cells": [
+            [
+              466.7,
+              762.03
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Евгеньевна,"
+        },
+        "330517711336": {
+          "type": "text_line",
+          "cells": [
+            [
+              424.23,
+              750.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "330517711336"
+        },
+        "(реквизиты": {
+          "type": "text_line",
+          "cells": [
+            [
+              375.2,
+              741.3
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(реквизиты"
+        },
+        "налогоплательщика": {
+          "type": "text_line",
+          "cells": [
+            [
+              410.97,
+              741.3
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "налогоплательщика"
+        },
+        "(представителя):": {
+          "type": "text_line",
+          "cells": [
+            [
+              375.2,
+              734.26
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(представителя):"
+        },
+        "полное": {
+          "type": "text_line",
+          "cells": [
+            [
+              379.21,
+              727.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "полное"
+        },
+        "наименование": {
+          "type": "text_line",
+          "cells": [
+            [
+              402.87,
+              727.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "наименование"
+        },
+        "организации,": {
+          "type": "text_line",
+          "cells": [
+            [
+              375.2,
+              720.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "организации,"
+        },
+        "ИНН/КПП;": {
+          "type": "text_line",
+          "cells": [
+            [
+              417.13,
+              720.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "ИНН/КПП;"
+        },
+        "Ф.И.О.": {
+          "type": "text_line",
+          "cells": [
+            [
+              379.21,
+              713.13
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "Ф.И.О."
+        },
+        "индивидуального": {
+          "type": "text_line",
+          "cells": [
+            [
+              401.34,
+              713.13
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "индивидуального"
+        },
+        "предпринимателя": {
+          "type": "text_line",
+          "cells": [
+            [
+              375.2,
+              706.08
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "предпринимателя"
+        },
+        "(физического": {
+          "type": "text_line",
+          "cells": [
+            [
+              431.55,
+              706.08
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(физического"
+        },
+        "лица),": {
+          "type": "text_line",
+          "cells": [
+            [
+              375.2,
+              699.04
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "лица),"
+        },
+        "ИНН": {
+          "type": "text_line",
+          "cells": [
+            [
+              395.96,
+              699.04
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "ИНН"
+        },
+        "(при": {
+          "type": "text_line",
+          "cells": [
+            [
+              412.0,
+              699.04
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(при"
+        },
+        "наличии))": {
+          "type": "text_line",
+          "cells": [
+            [
+              426.89,
+              699.04
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "наличии))"
+        },
+        "Квитанция": {
+          "type": "text_line",
+          "cells": [
+            [
+              280.56,
+              680.64
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "Квитанция"
+        },
+        "приеме": {
+          "type": "text_line",
+          "cells": [
+            [
+              208.38,
+              671.48
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "приеме"
+        },
+        "налоговой": {
+          "type": "text_line",
+          "cells": [
+            [
+              249.12,
+              671.48
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "налоговой"
+        },
+        "декларации": {
+          "type": "text_line",
+          "cells": [
+            [
+              306.03,
+              671.48
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "декларации"
+        },
+        "(расчета)": {
+          "type": "text_line",
+          "cells": [
+            [
+              369.86,
+              671.48
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "(расчета)"
+        },
+        "электронном": {
+          "type": "text_line",
+          "cells": [
+            [
+              265.26,
+              662.32
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "электронном"
+        },
+        "виде": {
+          "type": "text_line",
+          "cells": [
+            [
+              334.84,
+              662.32
+            ]
+          ],
+          "align": "left",
+          "font_size": 10.3,
+          "sample_value": "виде"
+        },
+        "УФНС": {
+          "type": "text_line",
+          "cells": [
+            [
+              188.46,
+              643.0
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "УФНС"
+        },
+        "России": {
+          "type": "text_line",
+          "cells": [
+            [
+              215.16,
+              643.0
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "России"
+        },
+        "по": {
+          "type": "text_line",
+          "cells": [
+            [
+              247.78,
+              643.0
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "по"
+        },
+        "Владимирской": {
+          "type": "text_line",
+          "cells": [
+            [
+              260.4,
+              643.0
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Владимирской"
+        },
+        "Налоговый": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              638.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Налоговый"
+        },
+        "орган": {
+          "type": "text_line",
+          "cells": [
+            [
+              136.41,
+              638.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "орган"
+        },
+        "настоящим": {
+          "type": "text_line",
+          "cells": [
+            [
+              330.82,
+              638.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "настоящим"
+        },
+        "документом": {
+          "type": "text_line",
+          "cells": [
+            [
+              377.31,
+              638.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "документом"
+        },
+        "подтверждает,": {
+          "type": "text_line",
+          "cells": [
+            [
+              426.68,
+              638.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "подтверждает,"
+        },
+        "что": {
+          "type": "text_line",
+          "cells": [
+            [
+              485.71,
+              638.77
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "что"
+        },
+        "области": {
+          "type": "text_line",
+          "cells": [
+            [
+              214.38,
+              633.84
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "области"
+        },
+        "(код": {
+          "type": "text_line",
+          "cells": [
+            [
+              251.0,
+              633.84
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "(код"
+        },
+        "3300)": {
+          "type": "text_line",
+          "cells": [
+            [
+              270.7,
+              633.84
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "3300)"
+        },
+        "(наименование": {
+          "type": "text_line",
+          "cells": [
+            [
+              191.2,
+              624.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(наименование"
+        },
+        "код": {
+          "type": "text_line",
+          "cells": [
+            [
+              245.14,
+              624.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "код"
+        },
+        "налогового__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              257.25,
+              624.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "налогового"
+        },
+        "органа)": {
+          "type": "text_line",
+          "cells": [
+            [
+              292.81,
+              624.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "органа)"
+        },
+        "Романов": {
+          "type": "text_line",
+          "cells": [
+            [
+              207.32,
+              613.42
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Романов"
+        },
+        "Дмитрий": {
+          "type": "text_line",
+          "cells": [
+            [
+              246.45,
+              613.42
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Дмитрий"
+        },
+        "Владимирович,": {
+          "type": "text_line",
+          "cells": [
+            [
+              285.97,
+              613.42
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Владимирович,"
+        },
+        "330573397709": {
+          "type": "text_line",
+          "cells": [
+            [
+              354.47,
+              613.42
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "330573397709"
+        },
+        "(полное": {
+          "type": "text_line",
+          "cells": [
+            [
+              199.55,
+              603.25
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(полное"
+        },
+        "наименование__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              225.4,
+              603.25
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "наименование"
+        },
+        "организации,__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              271.66,
+              603.25
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "организации,"
+        },
+        "ИНН/КПП;__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              313.59,
+              603.25
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "ИНН/КПП;"
+        },
+        "ФИО": {
+          "type": "text_line",
+          "cells": [
+            [
+              346.55,
+              603.25
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "ФИО"
+        },
+        "индивидуального__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              363.2,
+              603.25
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "индивидуального"
+        },
+        "предпринимателя__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              217.62,
+              596.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "предпринимателя"
+        },
+        "(физического__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              273.97,
+              596.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(физического"
+        },
+        "лица),__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              316.62,
+              596.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "лица),"
+        },
+        "ИНН__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              337.38,
+              596.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "ИНН"
+        },
+        "(при__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              353.41,
+              596.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(при"
+        },
+        "наличии))__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              368.31,
+              596.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "наличии))"
+        },
+        "представил(а)": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              585.95
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "представил(а)"
+        },
+        "24.01.2026": {
+          "type": "text_line",
+          "cells": [
+            [
+              148.88,
+              585.95
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "24.01.2026"
+        },
+        "07.49.53": {
+          "type": "text_line",
+          "cells": [
+            [
+              200.36,
+              585.95
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "07.49.53"
+        },
+        "налоговую": {
+          "type": "text_line",
+          "cells": [
+            [
+              235.6,
+              585.95
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "налоговую"
+        },
+        "декларацию": {
+          "type": "text_line",
+          "cells": [
+            [
+              279.51,
+              585.95
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "декларацию"
+        },
+        "(расчет)": {
+          "type": "text_line",
+          "cells": [
+            [
+              330.22,
+              585.95
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "(расчет)"
+        },
+        "Налоговая": {
+          "type": "text_line",
+          "cells": [
+            [
+              107.8,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Налоговая"
+        },
+        "декларация": {
+          "type": "text_line",
+          "cells": [
+            [
+              154.66,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "декларация"
+        },
+        "по__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              206.67,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "по"
+        },
+        "налогу,": {
+          "type": "text_line",
+          "cells": [
+            [
+              219.28,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "налогу,"
+        },
+        "уплачиваемому": {
+          "type": "text_line",
+          "cells": [
+            [
+              251.79,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "уплачиваемому"
+        },
+        "связи": {
+          "type": "text_line",
+          "cells": [
+            [
+              327.86,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "связи"
+        },
+        "применением": {
+          "type": "text_line",
+          "cells": [
+            [
+              361.37,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "применением"
+        },
+        "упрощенной": {
+          "type": "text_line",
+          "cells": [
+            [
+              421.09,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "упрощенной"
+        },
+        "системы": {
+          "type": "text_line",
+          "cells": [
+            [
+              475.97,
+              575.38
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "системы"
+        },
+        "налогообложения": {
+          "type": "text_line",
+          "cells": [
+            [
+              151.44,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "налогообложения"
+        },
+        "(КНД": {
+          "type": "text_line",
+          "cells": [
+            [
+              228.87,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "(КНД"
+        },
+        "1152017)": {
+          "type": "text_line",
+          "cells": [
+            [
+              251.32,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "1152017)"
+        },
+        "корректирующий": {
+          "type": "text_line",
+          "cells": [
+            [
+              293.6,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "корректирующий"
+        },
+        "(1)": {
+          "type": "text_line",
+          "cells": [
+            [
+              368.32,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "(1)"
+        },
+        "за": {
+          "type": "text_line",
+          "cells": [
+            [
+              385.69,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "за"
+        },
+        "год,": {
+          "type": "text_line",
+          "cells": [
+            [
+              396.83,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "год,"
+        },
+        "34,": {
+          "type": "text_line",
+          "cells": [
+            [
+              415.35,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "34,"
+        },
+        "2025": {
+          "type": "text_line",
+          "cells": [
+            [
+              429.45,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "2025"
+        },
+        "год": {
+          "type": "text_line",
+          "cells": [
+            [
+              450.6,
+              566.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "год"
+        },
+        "(наименование__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              173.92,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(наименование"
+        },
+        "налоговой__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              222.36,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "налоговой"
+        },
+        "декларации,": {
+          "type": "text_line",
+          "cells": [
+            [
+              255.68,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "декларации,"
+        },
+        "вид": {
+          "type": "text_line",
+          "cells": [
+            [
+              295.67,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "вид"
+        },
+        "документа,": {
+          "type": "text_line",
+          "cells": [
+            [
+              308.48,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "документа,"
+        },
+        "отчетный": {
+          "type": "text_line",
+          "cells": [
+            [
+              344.17,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "отчетный"
+        },
+        "период,": {
+          "type": "text_line",
+          "cells": [
+            [
+              374.41,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "период,"
+        },
+        "отчетный__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              399.94,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "отчетный"
+        },
+        "год)": {
+          "type": "text_line",
+          "cells": [
+            [
+              430.17,
+              556.76
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "год)"
+        },
+        "файле": {
+          "type": "text_line",
+          "cells": [
+            [
+              97.48,
+              546.5
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "файле"
+        },
+        "NO_USN_3300_3300_330517711336_20260124_1": {
+          "type": "text_line",
+          "cells": [
+            [
+              221.07,
+              545.8
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "NO_USN_3300_3300_330517711336_20260124_12d6c8ca-4bf8-4d"
+        },
+        "f5-a370-ce44469d1650": {
+          "type": "text_line",
+          "cells": [
+            [
+              304.73,
+              536.64
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "f5-a370-ce44469d1650"
+        },
+        "(наименование__2": {
+          "type": "text_line",
+          "cells": [
+            [
+              313.71,
+              526.48
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(наименование"
+        },
+        "файла)": {
+          "type": "text_line",
+          "cells": [
+            [
+              362.15,
+              526.48
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "файла)"
+        },
+        "налоговый": {
+          "type": "text_line",
+          "cells": [
+            [
+              97.48,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "налоговый"
+        },
+        "орган__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              141.81,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "орган"
+        },
+        "УФНС__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              242.58,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "УФНС"
+        },
+        "России__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              269.28,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "России"
+        },
+        "по__2": {
+          "type": "text_line",
+          "cells": [
+            [
+              301.9,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "по"
+        },
+        "Владимирской__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              314.52,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Владимирской"
+        },
+        "области__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              379.39,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "области"
+        },
+        "(код__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              416.02,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "(код"
+        },
+        "3300)__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              435.72,
+              516.22
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "3300)"
+        },
+        "(наименование__3": {
+          "type": "text_line",
+          "cells": [
+            [
+              286.64,
+              506.75
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(наименование"
+        },
+        "код__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              340.58,
+              506.75
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "код"
+        },
+        "налогового__2": {
+          "type": "text_line",
+          "cells": [
+            [
+              352.69,
+              506.75
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "налогового"
+        },
+        "органа)__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              388.25,
+              506.75
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "органа)"
+        },
+        "которая": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "которая"
+        },
+        "поступила": {
+          "type": "text_line",
+          "cells": [
+            [
+              123.75,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "поступила"
+        },
+        "24.01.2026__1": {
+          "type": "text_line",
+          "cells": [
+            [
+              166.72,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "24.01.2026"
+        },
+        "принята": {
+          "type": "text_line",
+          "cells": [
+            [
+              218.43,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "принята"
+        },
+        "налоговым": {
+          "type": "text_line",
+          "cells": [
+            [
+              252.5,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "налоговым"
+        },
+        "органом": {
+          "type": "text_line",
+          "cells": [
+            [
+              297.92,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "органом"
+        },
+        "24.01.2026,": {
+          "type": "text_line",
+          "cells": [
+            [
+              332.44,
+              496.49
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "24.01.2026,"
+        },
+        "регистрационный": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              485.93
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "регистрационный"
+        },
+        "номер": {
+          "type": "text_line",
+          "cells": [
+            [
+              162.09,
+              485.93
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "номер"
+        },
+        "00000000002774176425": {
+          "type": "text_line",
+          "cells": [
+            [
+              236.98,
+              485.93
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "00000000002774176425"
+        },
+        "Должностное": {
+          "type": "text_line",
+          "cells": [
+            [
+              90.64,
+              447.89
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "Должностное"
+        },
+        "лицо": {
+          "type": "text_line",
+          "cells": [
+            [
+              145.44,
+              447.89
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "лицо"
+        },
+        "(наименование__4": {
+          "type": "text_line",
+          "cells": [
+            [
+              144.71,
+              427.87
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(наименование"
+        },
+        "налогового__3": {
+          "type": "text_line",
+          "cells": [
+            [
+              193.15,
+              427.87
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "налогового"
+        },
+        "органа)__2": {
+          "type": "text_line",
+          "cells": [
+            [
+              228.71,
+              427.87
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "органа)"
+        },
+        "(классный": {
+          "type": "text_line",
+          "cells": [
+            [
+              135.63,
+              403.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(классный"
+        },
+        "чин)": {
+          "type": "text_line",
+          "cells": [
+            [
+              168.67,
+              403.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "чин)"
+        },
+        "(подпись)": {
+          "type": "text_line",
+          "cells": [
+            [
+              271.85,
+              403.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(подпись)"
+        },
+        "(Ф.И.О.)": {
+          "type": "text_line",
+          "cells": [
+            [
+              401.6,
+              403.21
+            ]
+          ],
+          "align": "left",
+          "font_size": 6.6,
+          "sample_value": "(Ф.И.О.)"
+        },
+        "М.П.": {
+          "type": "text_line",
+          "cells": [
+            [
+              208.77,
+              391.55
+            ]
+          ],
+          "align": "left",
+          "font_size": 8.5,
+          "sample_value": "М.П."
+        },
+        "Оператор": {
+          "type": "text_line",
+          "cells": [
+            [
+              415.04,
+              63.6
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Оператор"
+        },
+        "ЭДО": {
+          "type": "text_line",
+          "cells": [
+            [
+              448.3,
+              63.6
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ЭДО"
+        },
+        "ООО": {
+          "type": "text_line",
+          "cells": [
+            [
+              464.43,
+              63.6
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ООО"
+        },
+        "\"Компания": {
+          "type": "text_line",
+          "cells": [
+            [
+              481.49,
+              63.6
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "\"Компания"
+        },
+        "\"Тензор\"": {
+          "type": "text_line",
+          "cells": [
+            [
+              518.18,
+              63.6
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "\"Тензор\""
+        },
+        "ДОКУМЕНТ": {
+          "type": "text_line",
+          "cells": [
+            [
+              50.25,
+              52.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ДОКУМЕНТ"
+        },
+        "ПОДПИСАН": {
+          "type": "text_line",
+          "cells": [
+            [
+              88.57,
+              52.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ПОДПИСАН"
+        },
+        "ЭЛЕКТРОННОЙ": {
+          "type": "text_line",
+          "cells": [
+            [
+              127.77,
+              52.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ЭЛЕКТРОННОЙ"
+        },
+        "ПОДПИСЬЮ": {
+          "type": "text_line",
+          "cells": [
+            [
+              179.06,
+              52.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ПОДПИСЬЮ"
+        },
+        "Идентификатор:": {
+          "type": "text_line",
+          "cells": [
+            [
+              382.63,
+              52.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Идентификатор:"
+        },
+        "05fc595c-a533-4b4f-ae26-d3e56caae3d9": {
+          "type": "text_line",
+          "cells": [
+            [
+              438.09,
+              52.17
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "05fc595c-a533-4b4f-ae26-d3e56caae3d9"
+        },
+        "ДЕКЛАРАЦИЯ": {
+          "type": "text_line",
+          "cells": [
+            [
+              50.25,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ДЕКЛАРАЦИЯ"
+        },
+        "УПРАВЛЕНИЕ": {
+          "type": "text_line",
+          "cells": [
+            [
+              108.94,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "УПРАВЛЕНИЕ"
+        },
+        "ФЕДЕРАЛЬНОЙ": {
+          "type": "text_line",
+          "cells": [
+            [
+              160.03,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ФЕДЕРАЛЬНОЙ"
+        },
+        "НАЛОГОВОЙ": {
+          "type": "text_line",
+          "cells": [
+            [
+              217.93,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "НАЛОГОВОЙ"
+        },
+        "СЛУЖБЫ": {
+          "type": "text_line",
+          "cells": [
+            [
+              265.9,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "СЛУЖБЫ"
+        },
+        "ПО": {
+          "type": "text_line",
+          "cells": [
+            [
+              301.57,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ПО"
+        },
+        "24.01.26": {
+          "type": "text_line",
+          "cells": [
+            [
+              329.38,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "24.01.26"
+        },
+        "08:23": {
+          "type": "text_line",
+          "cells": [
+            [
+              362.68,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "08:23"
+        },
+        "Сертификат": {
+          "type": "text_line",
+          "cells": [
+            [
+              397.62,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Сертификат"
+        },
+        "00FC3E4CEBFB202C12C14094B382D3FAC9": {
+          "type": "text_line",
+          "cells": [
+            [
+              438.48,
+              33.23
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "00FC3E4CEBFB202C12C14094B382D3FAC9"
+        },
+        "ВЛАДИМИРСКОЙ": {
+          "type": "text_line",
+          "cells": [
+            [
+              108.94,
+              24.78
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ВЛАДИМИРСКОЙ"
+        },
+        "ОБЛАСТИ,": {
+          "type": "text_line",
+          "cells": [
+            [
+              173.47,
+              24.78
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "ОБЛАСТИ,"
+        },
+        "Фахретдинов": {
+          "type": "text_line",
+          "cells": [
+            [
+              212.52,
+              24.78
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Фахретдинов"
+        },
+        "Марат": {
+          "type": "text_line",
+          "cells": [
+            [
+              257.17,
+              24.78
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Марат"
+        },
+        "(MSK)": {
+          "type": "text_line",
+          "cells": [
+            [
+              329.38,
+              24.78
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "(MSK)"
+        },
+        "Мансурович,": {
+          "type": "text_line",
+          "cells": [
+            [
+              108.94,
+              16.33
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Мансурович,"
+        },
+        "Руководитель": {
+          "type": "text_line",
+          "cells": [
+            [
+              152.06,
+              16.33
+            ]
+          ],
+          "align": "left",
+          "font_size": 7.0,
+          "sample_value": "Руководитель"
+        }
+      }
+    }
+  },
+  "form_version": "1166002",
+  "fonts": {
+    "primary": {
+      "name": "DeclFont",
+      "size": 10
+    }
+  },
+  "_note": "Auto-extracted. РУЧНАЯ ДОРАБОТКА ТРЕБУЕТСЯ: (1) переименовать ключи в logical-имена, (2) удалить лишние (статические тексты формы), (3) проставить align/pad_char."
+}

@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: usn
+      POSTGRES_PASSWORD: usn
+      POSTGRES_DB: usn
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usn"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://usn:usn@db:5432/usn
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+      LOG_LEVEL: DEBUG
+      LOG_FORMAT: console
+      DADATA_API_KEY: ${DADATA_API_KEY:-}
+      DADATA_SECRET_KEY: ${DADATA_SECRET_KEY:-}
+    ports:
+      - "8000:8000"
+    # Для dev можно монтировать код:
+    # volumes:
+    #   - ./api:/app/api
+    #   - ./core:/app/core
+    #   - ./modules:/app/modules
+
+volumes:
+  pgdata:

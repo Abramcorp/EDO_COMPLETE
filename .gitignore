@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+/data/*.db
+/data/uploads/
+/data/outputs/
+/uploads/
+/outputs/
+
+# User reference PDFs (содержат реальные ПД)
+/templates/_user_reference/*.pdf
+
+# Но не исключаем ассеты шаблонов
+!/templates/**
