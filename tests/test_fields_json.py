@@ -119,6 +119,50 @@ class TestFields1166002:
         y2 = fields["file_name_line2"]["cells"][0][1]
         assert y2 < y1, "Line 2 должна быть ниже Line 1 (меньшая Y в reportlab-системе)"
 
+    def test_ifns_full_name_is_multiline(self, fields_1166002):
+        """
+        REGRESSION: в эталоне ТЕНЗОРа 'УФНС России по Владимирской области' занимает
+        2 строки (y≈643 и y≈634). В PR #1 было указано одной координатой — make_blank
+        не стирал первую строку. См. ADR-003.
+        """
+        fields = fields_1166002["pages_def"]["1"]["fields"]
+        assert "ifns_full_name_line1" in fields, (
+            "ifns_full_name должен быть разбит на line1/line2 — "
+            "в эталоне он занимает две строки"
+        )
+        assert "ifns_full_name_line2" in fields
+        y1 = fields["ifns_full_name_line1"]["cells"][0][1]
+        y2 = fields["ifns_full_name_line2"]["cells"][0][1]
+        assert y1 > y2, "line1 должна быть выше line2"
+        # line1 на y≈643 согласно эталону
+        assert 640 < y1 < 650, f"line1 Y={y1} — ожидается 643±3 (эталон)"
+        # line2 на y≈634
+        assert 630 < y2 < 637, f"line2 Y={y2} — ожидается 634±3 (эталон)"
+
+    def test_title_heading_not_in_dynamic_fields(self, fields_1166002):
+        """
+        REGRESSION: 'Квитанция' — это заголовок формы (константа), должен быть в
+        _static_fields. В PR #1 был в динамических под именем 'title_name' — скрипт
+        make_blank_from_reference.py стирал его, blank терял заголовок.
+        """
+        fields = fields_1166002["pages_def"]["1"]["fields"]
+        # Ни одного поля с sample_value == "Квитанция" не должно быть в динамических
+        problems = [
+            k for k, v in fields.items()
+            if v.get("sample_value", "").strip() == "Квитанция"
+        ]
+        assert not problems, (
+            f"Поля с sample_value='Квитанция' найдены в dynamic fields: {problems}. "
+            "'Квитанция' — заголовок формы, должен быть в _static_fields."
+        )
+        # И наоборот — в _static_fields должен упоминаться заголовок
+        static = fields_1166002["pages_def"]["1"].get("_static_fields", {})
+        has_title = any(
+            "Квитанция" in v.get("value", "") if isinstance(v, dict) else False
+            for v in static.values()
+        )
+        assert has_title, "_static_fields должен содержать 'Квитанция' как заголовок"
+
 
 class TestFields1166007:
     def test_json_parses(self, fields_1166007):
