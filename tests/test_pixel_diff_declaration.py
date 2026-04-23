@@ -68,7 +68,12 @@ _SKIP_REASON = (
 
 @pytest.fixture
 def romanov_data() -> DeclarationData:
-    """Данные из эталона ТЕНЗОРа (Романов Д.В. УСН 2025)."""
+    """
+    Данные из эталона ТЕНЗОРа (Романов Д.В. УСН 2025).
+    Декларация подписана представителем (Куприянова Е.Е. по доверенности).
+    """
+    from modules.declaration_filler.declaration_data import SIGNER_REPRESENTATIVE
+
     return DeclarationData(
         title=TitlePage(
             inn="330573397709",
@@ -83,6 +88,12 @@ def romanov_data() -> DeclarationData:
             phone="79157503070",
             signing_date=date(2026, 1, 24),
             object_code=OBJECT_INCOME,
+            # Подписант = представитель
+            signer_type=SIGNER_REPRESENTATIVE,
+            signer_name_line1="Куприянова",
+            signer_name_line2="Елена",
+            signer_name_line3="Евгеньевна",
+            representative_document="ДОВЕРЕННОСТЬ №2 ОТ 01.07.2025",
         ),
         section_1_1=Section_1_1(oktmo_q1="17701000"),
         section_2_1_1=Section_2_1_1(
