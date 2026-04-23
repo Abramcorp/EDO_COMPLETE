@@ -63,7 +63,7 @@ class TestPage1_TitlePage:
             "tax_period_year",
             "ifns_code",
             "at_location_code",
-            "taxpayer_name_line1",
+            "taxpayer_fio_full",  # PR #15: заменён taxpayer_name_line1..4 на одну строку 40 клеток
             "phone",
             "signing_date_day",
             "signing_date_month",
@@ -183,13 +183,40 @@ class TestPage1_TitlePage:
 
     # ===== Имя налогоплательщика =====
 
-    def test_taxpayer_name_is_multiline(self, fields):
-        """ФИО/наименование — 4 строки."""
+    def test_taxpayer_fio_full_40_cells(self, fields):
+        """
+        REGRESSION PR #15: ФИО было 4 text_line (taxpayer_name_line1..4),
+        теперь одна строка char_cells 40 знакомест (taxpayer_fio_full).
+        Соответствует эталону ТЕНЗОРа где ФИО занимает одну строку
+        клеток на y=651.5 (pdfplumber).
+        """
         f = self._p1(fields)
-        assert "taxpayer_name_line1" in f
-        assert "taxpayer_name_line2" in f
-        assert "taxpayer_name_line3" in f
-        assert "taxpayer_name_line4" in f
+        assert "taxpayer_fio_full" in f
+        spec = f["taxpayer_fio_full"]
+        assert spec["type"] == "char_cells"
+        assert len(spec["cells"]) == 40, f"ФИО должно быть 40 клеток, найдено {len(spec['cells'])}"
+        # Старые поля удалены
+        for old in ("taxpayer_name_line1", "taxpayer_name_line2",
+                    "taxpayer_name_line3", "taxpayer_name_line4"):
+            assert old not in f, f"Старое поле {old} должно быть удалено"
+
+    def test_signer_name_3_lines_char_cells(self, fields):
+        """PR #15: ФИО представителя — 3 строки по 40 char_cells."""
+        f = self._p1(fields)
+        for i in (1, 2, 3):
+            key = f"signer_name_line{i}"
+            assert key in f, f"Отсутствует {key}"
+            spec = f[key]
+            assert spec["type"] == "char_cells"
+            assert len(spec["cells"]) == 40
+
+    def test_representative_document_2_lines(self, fields):
+        """PR #15: reprensentative_document — 2 строки (текст + дата)."""
+        f = self._p1(fields)
+        for key in ("representative_document_line1", "representative_document_line2"):
+            assert key in f, f"Отсутствует {key}"
+            assert f[key]["type"] == "char_cells"
+            assert len(f[key]["cells"]) == 40
 
 
 class TestReferenceDataAlignment:
