@@ -205,9 +205,10 @@ class TestComputeReceiptTimestamps:
     def test_utc_datetime_converted_to_msk(self):
         utc = datetime(2026, 1, 1, 7, 0, tzinfo=ZoneInfo("UTC"))
         t = compute_receipt_timestamps(signing_datetime=utc, operator="tensor", seed=1)
-        # 07:00 UTC = 10:00 MSK
+        # 07:00 UTC = 10:00 MSK (UTC+3)
         assert t.signing.hour == 10
-        assert t.signing.tzinfo.key == "Europe/Moscow"  # type: ignore[union-attr]
+        # Оффсет должен быть +3 часа — работает и с ZoneInfo, и с fallback timezone
+        assert t.signing.utcoffset() == timedelta(hours=3)
 
     def test_seeded_deterministic(self):
         signing = datetime(2026, 1, 1, 10, 0, tzinfo=MSK)

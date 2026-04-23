@@ -26,6 +26,11 @@ xlrd>=2.0.1                 # legacy xls
 # ===== HTTP =====
 httpx>=0.27.0               # async (DaData, заменяет requests из edo-stamps)
 
+# ===== Timezones =====
+# Windows не имеет системной tzdata. Linux/macOS обычно имеют, но держим в deps
+# для гарантированной детерминированности всех окружений.
+tzdata>=2024.1
+
 # ===== Observability =====
 structlog>=24.4.0
 python-json-logger>=2.0.7
