@@ -172,14 +172,20 @@ async def run_pipeline(
     except Exception as e:
         raise TaxCalculationError(f"Ошибка расчёта налога: {e}", cause=e) from e
 
-    # -------- 5. Рендер PDF декларации (reportlab + pypdf overlay на ФНС-подложку) --------
+    # -------- 5. Рендер PDF декларации (reportlab Canvas + таблицы клеточек) --------
+    # С PR #21 перешли с overlay-over-raster на table_renderer — теперь декларация
+    # рисуется с нуля через ReportLab, без подложки ФНС. Это устранило проблемы
+    # наложения наших значений на предзаполненные цифры эталона.
     await tracker.emit(PipelineStage.RENDERING_DECLARATION)
     try:
-        from modules.declaration_filler import render_declaration_pdf
+        from modules.table_renderer import render_declaration_pdf
+        signing_dt_for_decl = _resolve_signing_datetime(req.stamps.signing_datetime_override)
         declaration_pdf: bytes = render_declaration_pdf(
             taxpayer=req.taxpayer,
             tax_period_year=req.tax_period_year,
             tax_result=tax_result,
+            correction_number=req.correction_number,
+            signing_date=signing_dt_for_decl,
         )
     except Exception as e:
         raise DeclarationRenderError(f"Ошибка рендера декларации: {e}", cause=e) from e
@@ -219,28 +225,56 @@ async def run_pipeline(
     if req.stamps.include_receipts:
         await tracker.emit(PipelineStage.APPENDING_RECEIPTS)
         try:
-            from modules.edo_stamps import build_receipt_pages, assemble_full_package
-            # Override-даты парсим той же функцией что и signing_datetime
-            submission_dt = (
-                _resolve_signing_datetime(req.stamps.submission_datetime_override)
-                if req.stamps.submission_datetime_override else None
+            from modules.table_renderer.receipts import (
+                ReceiptRenderData, render_receipt_pages,
             )
-            acceptance_dt = (
-                _resolve_signing_datetime(req.stamps.acceptance_datetime_override)
-                if req.stamps.acceptance_datetime_override else None
+            from modules.edo_stamps import assemble_full_package
+            from modules.edo_stamps.receipt_data import (
+                compute_receipt_timestamps,
+                generate_document_uuid,
+                generate_file_name,
+                generate_registration_number,
             )
-            receipts_pdf = build_receipt_pages(
-                operator=req.stamps.operator,
-                taxpayer=req.taxpayer,
-                tax_period_year=req.tax_period_year,
+
+            op = req.stamps.operator.value if hasattr(req.stamps.operator, "value") else str(req.stamps.operator)
+
+            # Параметры: override → авто-генерация
+            document_uuid = req.stamps.document_uuid_override or generate_document_uuid(op)  # type: ignore
+            registration_number = req.stamps.registration_number_override or generate_registration_number()
+            file_name = generate_file_name(
+                operator=op,  # type: ignore
+                ifns_code=req.taxpayer.ifns_code,
+                declarant_inn=req.taxpayer.inn,
+                date=signing_dt,
+                document_uuid=document_uuid,
+            )
+            # Таймстампы: override → auto
+            if req.stamps.submission_datetime_override:
+                submission_dt = _resolve_signing_datetime(req.stamps.submission_datetime_override)
+            else:
+                submission_dt = compute_receipt_timestamps(signing_datetime=signing_dt, operator=op).submission  # type: ignore
+            if req.stamps.acceptance_datetime_override:
+                acceptance_dt = _resolve_signing_datetime(req.stamps.acceptance_datetime_override)
+            else:
+                acceptance_dt = compute_receipt_timestamps(signing_datetime=signing_dt, operator=op).acceptance  # type: ignore
+
+            # ФИО налогоплательщика + ИНН в виде как отображается в квитанции
+            taxpayer_fio_with_inn = f"{req.taxpayer.fio}, {req.taxpayer.inn}"
+
+            rec_data = ReceiptRenderData(
+                taxpayer_inn=req.taxpayer.inn,
+                taxpayer_fio=taxpayer_fio_with_inn,
+                ifns_code=req.taxpayer.ifns_code,
+                ifts_full_name=ifts_info.name or "",
+                declaration_knd="1152017",
                 correction_number=req.correction_number,
-                ifts_info=ifts_info,
-                signing_datetime=signing_dt,
-                document_uuid_override=req.stamps.document_uuid_override,
-                registration_number_override=req.stamps.registration_number_override,
-                submission_datetime_override=submission_dt,
-                acceptance_datetime_override=acceptance_dt,
+                tax_period_year=req.tax_period_year,
+                file_name=file_name,
+                submission_datetime=submission_dt,
+                acceptance_datetime=acceptance_dt,
+                registration_number=registration_number,
             )
+            receipts_pdf = render_receipt_pages(rec_data)
             full_pdf = assemble_full_package(
                 declaration_pdf=declaration_pdf,
                 receipts_pdf=receipts_pdf,
