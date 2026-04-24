@@ -46,6 +46,14 @@ def _src_core():
 
 def _src_stamp_shim():
     # shim-модуль edo_stamp экспортирует Party, StampConfig, apply_stamps, cert generators
+    # edo_stamp.py использует абсолютные импорты (from edo_core, from edo_tensor, ...)
+    # Эти файлы лежат в папке modules/edo_stamps/, которой может не быть в sys.path.
+    # Добавляем её перед импортом, чтобы shim работал.
+    import sys
+    from pathlib import Path
+    _stamps_dir = str(Path(__file__).parent)
+    if _stamps_dir not in sys.path:
+        sys.path.insert(0, _stamps_dir)
     from . import edo_stamp
     return edo_stamp
 
