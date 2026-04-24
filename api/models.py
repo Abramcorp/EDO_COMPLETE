@@ -97,12 +97,25 @@ class PersonnelInfo(BaseModel):
     num_employees: int = Field(0, ge=0)
 
 
+class IftsInfoOverride(BaseModel):
+    """Данные налогового органа, заданные пользователем в UI.
+    Если переданы — pipeline использует их вместо запроса к DaData."""
+    inn: str = Field(..., min_length=10, max_length=10)
+    name: str = Field(..., min_length=1)
+    address: str = ""
+    manager_name: str = ""
+    manager_post: str = ""
+
+
 class StampsConfig(BaseModel):
     """Конфиг для наложения штампов ЭДО."""
     enabled: bool = True
     operator: EdoOperator = EdoOperator.KONTUR
     # ИНН налогового органа (получателя) — если не указан, резолвим через DaData по ifns_code
     tax_authority_inn: Optional[str] = None
+    # Полный override данных ИФНС (для случаев когда DaData недоступна или
+    # пользователь ввёл вручную через UI-wizard)
+    ifts_info_override: Optional[IftsInfoOverride] = None
     # Добавлять ли страницы квитанций КНД 1166002 + КНД 1166007 (см. ADR-003).
     # False: PDF из 4 страниц (как современный КОНТУР-образец)
     # True:  PDF из 6 страниц (как ТЕНЗОР-образец)
