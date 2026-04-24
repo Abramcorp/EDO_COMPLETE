@@ -513,6 +513,15 @@
         Значения <b>накопительные</b>: за 9 месяцев = взносы с 1 января по 30 сентября.
       </div>
 
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="btn-calc-contrib" style="padding:8px 16px; font-size:13px">
+          Рассчитать автоматически
+        </button>
+        <span class="field-hint" style="margin:0" id="contrib-breakdown">
+          Посчитает фиксированный взнос ИП + 1% сверх 300 000 ₽ (+ взносы за работников если есть)
+        </span>
+      </div>
+
       <div class="row-4">
         <div>
           <label class="field-label">На 31 марта (Q1)</label>
@@ -592,6 +601,29 @@
       </div>
     </div>
 
+    <div class="card" id="advanced-card">
+      <p class="card-title">Дополнительные параметры (опционально)</p>
+
+      <div class="row-2">
+        <div>
+          <label class="field-label">Номер корректировки</label>
+          <input type="number" id="correction-number" min="0" max="99" value="0" />
+          <div class="field-hint">0 — первичная декларация, 1+ — уточнённая</div>
+        </div>
+        <div>
+          <label class="field-label">Дата подписания</label>
+          <input type="text" id="signing-date" placeholder="2026-04-25 (пусто = сегодня)" />
+          <div class="field-hint">ISO-формат YYYY-MM-DD, МСК</div>
+        </div>
+      </div>
+
+      <div id="advanced-stamp-fields">
+        <label class="field-label">ИНН налогового органа</label>
+        <input type="text" id="tax-authority-inn" maxlength="10" placeholder="10 цифр (пусто = автоопределение через DaData)" />
+        <div class="field-hint">Если пусто, система сама определит по коду ИФНС через справочник DaData</div>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn btn-secondary" id="btn-step4-back">← Назад</button>
       <button class="btn btn-primary" id="btn-step4-next">Сгенерировать декларацию</button>
@@ -628,6 +660,9 @@ const state = {
   contributions: { q1: 0, half_year: 0, nine_months: 0, year: 0 },
   taxpayer: { inn: '', fio: '', oktmo: '', ifns_code: '' },
   stampVariant: 'kontur',
+  correctionNumber: 0,
+  signingDate: '',
+  taxAuthorityInn: '',
   jobId: null,
 };
 
@@ -815,6 +850,60 @@ Object.entries(CONTRIB_MAP).forEach(([id, key]) => {
   });
 });
 
+// Кнопка автоматического расчёта страховых взносов
+document.getElementById('btn-calc-contrib').onclick = async () => {
+  const btn = document.getElementById('btn-calc-contrib');
+  const info = document.getElementById('contrib-breakdown');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Считаем…';
+
+  try {
+    const annualIncome = state.monthly.reduce((s, m) => s + m.cashless + m.cash, 0);
+    const body = {
+      year: state.year,
+      annual_income: annualIncome,
+      has_employees: state.personnel.has_employees,
+      avg_salary: state.personnel.avg_salary,
+      num_employees: state.personnel.num_employees,
+    };
+
+    const r = await fetch('/api/contributions/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(`${r.status}: ${err.slice(0, 200)}`);
+    }
+    const res = await r.json();
+
+    // Заполняем поля UI
+    document.getElementById('contrib-q1').value = res.q1;
+    document.getElementById('contrib-h1').value = res.half_year;
+    document.getElementById('contrib-9m').value = res.nine_months;
+    document.getElementById('contrib-y').value = res.year;
+    state.contributions = {
+      q1: res.q1, half_year: res.half_year,
+      nine_months: res.nine_months, year: res.year,
+    };
+
+    // Показываем разбивку
+    let breakdown = `ИП фикс: <b>${res.ip_fixed.toLocaleString('ru')} ₽</b>, 1% сверх 300 000: <b>${res.ip_1pct.toLocaleString('ru')} ₽</b>`;
+    if (res.employee_total > 0) {
+      breakdown += `, за работников: <b>${res.employee_total.toLocaleString('ru')} ₽</b>`;
+    }
+    breakdown += ` → итого за год: <b>${res.year.toLocaleString('ru')} ₽</b>. Значения можно скорректировать.`;
+    info.innerHTML = breakdown;
+    info.style.color = 'var(--text)';
+  } catch (e) {
+    info.innerHTML = `<span style="color:var(--danger)">Ошибка: ${e.message}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Рассчитать автоматически';
+  }
+};
+
 document.getElementById('btn-step3-back').onclick = () => goToStep(2);
 document.getElementById('btn-step3-next').onclick = () => {
   document.getElementById('inn').value = state.taxpayer.inn;
@@ -837,7 +926,21 @@ document.querySelectorAll('.radio-opt').forEach(opt => {
     const inp = opt.querySelector('input[type=radio]');
     inp.checked = true;
     state.stampVariant = inp.value;
+    // Скрываем поле ИНН налогового органа если выбран вариант "без штампа"
+    const adv = document.getElementById('advanced-stamp-fields');
+    adv.style.display = (inp.value === 'none') ? 'none' : 'block';
   };
+});
+
+// Доп поля шага 4
+document.getElementById('correction-number').addEventListener('input', e => {
+  state.correctionNumber = Number(e.target.value) || 0;
+});
+document.getElementById('signing-date').addEventListener('input', e => {
+  state.signingDate = e.target.value.trim();
+});
+document.getElementById('tax-authority-inn').addEventListener('input', e => {
+  state.taxAuthorityInn = e.target.value.trim();
 });
 
 document.getElementById('btn-step4-back').onclick = () => goToStep(3);
@@ -879,13 +982,23 @@ async function runGeneration() {
 
 function buildMeta() {
   const variant = state.stampVariant;
-  const stamps = variant === 'none'
-    ? { enabled: false }
-    : {
-        enabled: true,
-        operator: variant,
-        include_receipts: variant === 'tensor',
-      };
+  let stamps;
+  if (variant === 'none') {
+    stamps = { enabled: false };
+  } else {
+    stamps = {
+      enabled: true,
+      operator: variant,
+      include_receipts: variant === 'tensor',
+    };
+    if (state.taxAuthorityInn) {
+      stamps.tax_authority_inn = state.taxAuthorityInn;
+    }
+    if (state.signingDate) {
+      // Бэкенд ожидает ISO8601 (можно просто дату — интерпретируется как полночь МСК)
+      stamps.signing_datetime_override = state.signingDate;
+    }
+  }
 
   const personnel = state.personnel.has_employees ? {
     has_employees: true,
@@ -905,6 +1018,7 @@ function buildMeta() {
     contributions: state.contributions,
     personnel: personnel,
     stamps: stamps,
+    correction_number: state.correctionNumber,
     monthly_income_override: state.monthly.map(m => ({
       month: m.month,
       cashless: m.cashless,

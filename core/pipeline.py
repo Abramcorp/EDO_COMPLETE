@@ -179,7 +179,7 @@ async def run_pipeline(
                 operator=req.stamps.operator,
                 taxpayer=req.taxpayer,
                 tax_period_year=req.tax_period_year,
-                correction_number=0,
+                correction_number=req.correction_number,
                 ifts_info=ifts_info,
                 signing_datetime=signing_dt,
             )
