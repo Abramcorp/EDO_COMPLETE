@@ -128,9 +128,37 @@ class DeclarationRequest(BaseModel):
     contributions: ContributionsInfo = ContributionsInfo()
     personnel: PersonnelInfo = PersonnelInfo()
     stamps: StampsConfig = StampsConfig()
+    # Номер корректировки — 0 для первичной, 1, 2, ... для уточнённой
+    correction_number: int = Field(0, ge=0, le=99)
     # Если передан — используется вместо пересчёта из выписки.
     # Формируется UI-wizard'ом после шага 2 (пользователь отредактировал).
     monthly_income_override: Optional[list[MonthlyIncomeItem]] = None
+
+
+# ============================================================
+# Contributions preview (для UI-кнопки "Рассчитать автоматически")
+# ============================================================
+
+class ContributionsPreviewRequest(BaseModel):
+    """Вход для /api/contributions/preview."""
+    year: int = Field(..., ge=2020, le=2030)
+    annual_income: Decimal = Field(..., ge=0, description="Общий годовой доход (безнал+нал)")
+    has_employees: bool = False
+    avg_salary: Decimal = Field(Decimal("0"), ge=0)
+    num_employees: int = Field(0, ge=0)
+
+
+class ContributionsPreviewResponse(BaseModel):
+    """Результат авторасчёта страховых взносов."""
+    # Детализация
+    ip_fixed: int = Field(..., description="Фиксированный взнос ИП за себя")
+    ip_1pct: int = Field(..., description="1% с доходов свыше 300 000")
+    employee_total: int = Field(0, description="Взносы за работников (за год)")
+    # Кумулятивные суммы по периодам (для заполнения полей ContributionsInfo)
+    q1: int
+    half_year: int
+    nine_months: int
+    year: int
 
 
 # ============================================================
