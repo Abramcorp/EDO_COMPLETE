@@ -16,7 +16,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ============================================================
@@ -110,7 +110,8 @@ class IftsInfoOverride(BaseModel):
 class StampsConfig(BaseModel):
     """Конфиг для наложения штампов ЭДО."""
     enabled: bool = True
-    operator: EdoOperator = EdoOperator.KONTUR
+    # Дефолт TENSOR, т.к. KONTUR временно отключён (см. валидатор ниже).
+    operator: EdoOperator = EdoOperator.TENSOR
     # ИНН налогового органа (получателя) — если не указан, резолвим через DaData по ifns_code
     tax_authority_inn: Optional[str] = None
     # Полный override данных ИФНС (для случаев когда DaData недоступна или
@@ -123,6 +124,24 @@ class StampsConfig(BaseModel):
     # Опциональное явно заданное время подписания (для тестов / офлайн-режима).
     # Если None — берётся now() в MSK при старте pipeline.
     signing_datetime_override: Optional[str] = None  # ISO8601
+    # Override параметров квитанций ФНС (если None — генерируются автоматически).
+    # Полезно если у пользователя есть официальная квитанция с известным UUID/регномером.
+    document_uuid_override: Optional[str] = None
+    registration_number_override: Optional[str] = None
+    submission_datetime_override: Optional[str] = None   # ISO8601
+    acceptance_datetime_override: Optional[str] = None   # ISO8601
+
+    @model_validator(mode="after")
+    def _kontur_temporarily_disabled(self) -> "StampsConfig":
+        """Временно запрещаем KONTUR когда штамп включён.
+        При enabled=False оператор не используется — пропускаем.
+        Убрать этот валидатор когда KONTUR-шаблон будет готов."""
+        if self.enabled and self.operator == EdoOperator.KONTUR:
+            raise ValueError(
+                "Оператор 'kontur' временно недоступен. "
+                "Используйте 'tensor' или отключите штамп (enabled=false)."
+            )
+        return self
 
 
 class MonthlyIncomeItem(BaseModel):
@@ -172,6 +191,28 @@ class ContributionsPreviewResponse(BaseModel):
     half_year: int
     nine_months: int
     year: int
+
+
+# ============================================================
+# Receipt params preview (для UI-кнопки "Сгенерировать параметры")
+# ============================================================
+
+class ReceiptParamsRequest(BaseModel):
+    """Вход для /api/receipt/preview-params."""
+    operator: EdoOperator
+    ifns_code: str = Field(..., min_length=4, max_length=4)
+    declarant_inn: str = Field(..., min_length=10, max_length=12)
+    signing_datetime: Optional[str] = None  # ISO или русский формат
+
+
+class ReceiptParamsResponse(BaseModel):
+    """Результат генерации параметров квитанций."""
+    document_uuid: str = Field(..., description="UUID документа в формате оператора")
+    registration_number: str = Field(..., description="Регистрационный номер (20 цифр)")
+    file_name: str = Field(..., description="Имя файла декларации")
+    submission_datetime: str = Field(..., description="Дата отправки в ФНС (ISO)")
+    acceptance_datetime: str = Field(..., description="Дата приёма ФНС (ISO)")
+    processing_datetime: str = Field(..., description="Дата обработки ФНС (ISO)")
 
 
 # ============================================================

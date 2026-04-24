@@ -220,6 +220,15 @@ async def run_pipeline(
         await tracker.emit(PipelineStage.APPENDING_RECEIPTS)
         try:
             from modules.edo_stamps import build_receipt_pages, assemble_full_package
+            # Override-даты парсим той же функцией что и signing_datetime
+            submission_dt = (
+                _resolve_signing_datetime(req.stamps.submission_datetime_override)
+                if req.stamps.submission_datetime_override else None
+            )
+            acceptance_dt = (
+                _resolve_signing_datetime(req.stamps.acceptance_datetime_override)
+                if req.stamps.acceptance_datetime_override else None
+            )
             receipts_pdf = build_receipt_pages(
                 operator=req.stamps.operator,
                 taxpayer=req.taxpayer,
@@ -227,6 +236,10 @@ async def run_pipeline(
                 correction_number=req.correction_number,
                 ifts_info=ifts_info,
                 signing_datetime=signing_dt,
+                document_uuid_override=req.stamps.document_uuid_override,
+                registration_number_override=req.stamps.registration_number_override,
+                submission_datetime_override=submission_dt,
+                acceptance_datetime_override=acceptance_dt,
             )
             full_pdf = assemble_full_package(
                 declaration_pdf=declaration_pdf,

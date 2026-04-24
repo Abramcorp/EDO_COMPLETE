@@ -313,6 +313,19 @@ class PdfOverlayFiller:
         return buf.getvalue()
 
     def _draw_field(self, c: rl_canvas.Canvas, spec: FieldSpec, value: str) -> None:
+        """Рисует значение поля в PDF overlay.
+
+        Перед отрисовкой КАЖДОГО непустого символа рисует маленький
+        белый прямоугольник чтобы стереть предзаполненный текст в эталоне
+        (напр. "1" в Номере корректировки, "6.0" в Ставке). Стираются
+        ТОЛЬКО клетки в которые пишем — пустые клетки не трогаются,
+        чтобы не задеть подписи соседних полей (напр. "130" в колонке
+        "Код строки" при перекрытии координат с fields.json).
+
+        Важно: если в эталоне есть пример-мусор в клетках, в которые мы
+        ничего не пишем (напр. "24571" в полях 132/133) — он останется.
+        Правильное решение — дочистить исходный blank.pdf.
+        """
         if not spec.cells:
             return
         try:
@@ -320,17 +333,35 @@ class PdfOverlayFiller:
         except KeyError:
             c.setFont("Helvetica", spec.font_size)
 
+        # Узкая подложка — только под телом символа.
+        # Клетка ~13.4×14pt; символ ~6-7pt. Подложка 9×11pt со сдвигом +1
+        # стирает символ, не задевает клеточных рамок и ПОДПИСЕЙ соседних
+        # полей при перекрытии координат.
+        ERASE_W = 9.0
+        ERASE_H = 11.0
+        ERASE_DX = 1.0
+        ERASE_DY = -2.0
+
+        def _erase(x: float, y: float, w: float = ERASE_W, h: float = ERASE_H) -> None:
+            c.saveState()
+            c.setFillColorRGB(1, 1, 1)
+            c.rect(x + ERASE_DX, y + ERASE_DY, w, h, fill=1, stroke=0)
+            c.restoreState()
+
         if spec.type == "text_line":
             x, y = spec.cells[0]
+            text_w = c.stringWidth(value, self.font_name, spec.font_size)
+            _erase(x, y, w=text_w + 2.0)
             c.drawString(x, y, value)
             return
 
         if spec.type == "checkbox":
             x, y = spec.cells[0]
+            _erase(x, y)
             c.drawString(x, y, "V")
             return
 
-        # char_cells
+        # char_cells: стираем и пишем только непустые клетки
         n = len(spec.cells)
         s = value
         if spec.align == "right":
@@ -344,6 +375,7 @@ class PdfOverlayFiller:
         for i, ch in enumerate(s):
             if ch.strip():
                 x, y = spec.cells[i]
+                _erase(x, y)
                 c.drawString(x, y, ch)
 
     # --------------------------------------------------------
