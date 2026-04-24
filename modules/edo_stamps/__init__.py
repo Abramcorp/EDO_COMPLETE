@@ -83,37 +83,76 @@ async def fetch_ifts_data(ifns_code: str, override_inn: str | None = None) -> If
     """
     token = os.environ.get("DADATA_API_KEY", "")
     if not token:
-        raise RuntimeError("DADATA_API_KEY не задан в окружении")
+        raise RuntimeError(
+            "DADATA_API_KEY не задан в окружении. "
+            "Заполните данные ИФНС вручную в UI — они попадут в "
+            "ifts_info_override и DaData не потребуется."
+        )
 
-    # Если явно передали ИНН — получаем данные по нему через findById/party
-    # Иначе — через findById/fns_unit по коду ИФНС
     if override_inn:
         return await _lookup_party(override_inn, token)
     return await _lookup_fns_unit(ifns_code, token)
 
 
+async def _dadata_post_with_retry(
+    url: str, token: str, query: str, max_retries: int = 2,
+) -> dict:
+    """POST в DaData с retry при network-ошибках и понятными сообщениями на HTTP-коды."""
+    import asyncio as _asyncio
+    last_exc: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(
+                    url,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "Authorization": f"Token {token}",
+                    },
+                    json={"query": query.strip()},
+                )
+            if resp.status_code in (401, 403):
+                raise RuntimeError(
+                    f"DaData вернул {resp.status_code}: неверный или истёкший "
+                    f"DADATA_API_KEY. Проверь токен в переменных окружения."
+                )
+            if resp.status_code == 429:
+                raise RuntimeError(
+                    "DaData вернул 429 (rate limit превышен). "
+                    "Подожди минуту или увеличь лимит в тарифе."
+                )
+            if resp.status_code >= 500:
+                raise RuntimeError(
+                    f"DaData временно недоступна (HTTP {resp.status_code}). "
+                    f"Попробуй ещё раз или заполни данные ИФНС вручную."
+                )
+            resp.raise_for_status()
+            return resp.json()
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.ReadError) as e:
+            last_exc = e
+            if attempt < max_retries:
+                await _asyncio.sleep(0.5 * (attempt + 1))
+                continue
+            raise RuntimeError(
+                f"DaData недоступна (network error после {max_retries + 1} попыток): {e}. "
+                f"Заполни данные ИФНС вручную или выбери 'Без штампа'."
+            ) from e
+    raise last_exc or RuntimeError("DaData: unknown error")
+
+
 async def _lookup_party(inn: str, token: str) -> IftsInfo:
-    """Запрос findById/party (по ИНН)."""
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.post(
-            DADATA_PARTY_URL,
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": f"Token {token}",
-            },
-            json={"query": inn.strip()},
-        )
-        resp.raise_for_status()
-        suggestions = resp.json().get("suggestions", [])
+    """Запрос findById/party (по ИНН) с retry и defensive parsing."""
+    data = await _dadata_post_with_retry(DADATA_PARTY_URL, token, inn)
+    suggestions = data.get("suggestions", [])
 
     if not suggestions:
         raise ValueError(f"DaData: ничего не найдено по ИНН {inn}")
 
-    d = suggestions[0]["data"]
-    manager = d.get("management") or {}
-    full_name = (d.get("name") or {}).get("full_with_opf", "") or suggestions[0].get("value", "")
-    address = (d.get("address") or {}).get("unrestricted_value", "")
+    d = suggestions[0].get("data") or {}
+    manager = _as_dict(d.get("management"))
+    full_name = _as_dict(d.get("name")).get("full_with_opf", "") or suggestions[0].get("value", "")
+    address = _as_dict(d.get("address")).get("unrestricted_value", "")
 
     return IftsInfo(
         inn=inn,
@@ -125,29 +164,37 @@ async def _lookup_party(inn: str, token: str) -> IftsInfo:
 
 
 async def _lookup_fns_unit(ifns_code: str, token: str) -> IftsInfo:
-    """Запрос findById/fns_unit (по коду ИФНС)."""
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.post(
-            DADATA_FNS_URL,
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": f"Token {token}",
-            },
-            json={"query": ifns_code.strip()},
-        )
-        resp.raise_for_status()
-        suggestions = resp.json().get("suggestions", [])
+    """Запрос findById/fns_unit (по коду ИФНС) с retry и defensive parsing.
+
+    Поле address может прийти как строка или как dict — _as_dict защищает."""
+    data = await _dadata_post_with_retry(DADATA_FNS_URL, token, ifns_code)
+    suggestions = data.get("suggestions", [])
 
     if not suggestions:
         raise ValueError(f"DaData: не найден ИФНС с кодом {ifns_code}")
 
-    d = suggestions[0]["data"]
-    return IftsInfo(
-        inn=d.get("inn", ""),
-        name=suggestions[0].get("value", ""),
-        address=d.get("address", {}).get("unrestricted_value", ""),
+    d = suggestions[0].get("data") or {}
+    address_obj = _as_dict(d.get("address"))
+    address = (
+        address_obj.get("unrestricted_value")
+        or address_obj.get("value")
+        or (d.get("address") if isinstance(d.get("address"), str) else "")
+        or ""
     )
+
+    return IftsInfo(
+        inn=d.get("inn", "") or "",
+        name=suggestions[0].get("value", "") or "",
+        address=address,
+    )
+
+
+def _as_dict(v: Any) -> dict:
+    """Защитный cast: если v не dict — вернуть пустой dict.
+
+    Лечит баг 'str' object has no attribute 'get': DaData иногда возвращает
+    поля строками вместо dict (или None)."""
+    return v if isinstance(v, dict) else {}
 
 
 # ============================================================

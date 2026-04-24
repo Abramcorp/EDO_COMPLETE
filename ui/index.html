@@ -950,6 +950,34 @@ document.getElementById('btn-step4-next').onclick = async () => {
   if (!t.fio || t.fio.length < 3) return alert('Введите ФИО');
   if (!/^\d{8}$|^\d{11}$/.test(t.oktmo)) return alert('ОКТМО должен быть 8 или 11 цифр');
   if (!/^\d{4}$/.test(t.ifns_code)) return alert('Код ИФНС должен быть 4 цифры');
+
+  // Для варианта со штампом: если нет override и не пробовали DaData — предупреждаем.
+  if (state.stampVariant !== 'none') {
+    const ip = state.iftsPreview;
+    const hasOverride = state.taxAuthorityInn && /^\d{10}$/.test(state.taxAuthorityInn) && ip.name;
+    if (!hasOverride) {
+      const confirmed = confirm(
+        'Данные ИФНС не заполнены вручную и не запрошены из DaData.\n\n' +
+        'Если DADATA_API_KEY не настроен на сервере, генерация упадёт.\n\n' +
+        'OK — продолжить (попробуем через DaData), Отмена — вернуться и заполнить.'
+      );
+      if (!confirmed) return;
+    }
+  }
+
+  // Валидация формата даты подписания
+  if (state.signingDate) {
+    const iso = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/;
+    const ru = /^\d{1,2}\.\d{1,2}\.\d{4}( \d{1,2}:\d{2}(:\d{2})?)?$/;
+    const dash = /^\d{1,2}-\d{1,2}-\d{4}( \d{1,2}:\d{2}(:\d{2})?)?$/;
+    if (!iso.test(state.signingDate) && !ru.test(state.signingDate) && !dash.test(state.signingDate)) {
+      return alert(
+        'Дата подписания неверного формата.\n' +
+        'Поддерживается: 2026-04-25, 25.04.2026, 25-04-2026 (с опциональным временем).'
+      );
+    }
+  }
+
   goToStep(5);
   await runGeneration();
 };
@@ -995,8 +1023,20 @@ function buildMeta() {
       stamps.tax_authority_inn = state.taxAuthorityInn;
     }
     if (state.signingDate) {
-      // Бэкенд ожидает ISO8601 (можно просто дату — интерпретируется как полночь МСК)
       stamps.signing_datetime_override = state.signingDate;
+    }
+    // Если пользователь заполнил карточку "Данные ИФНС" (минимум ИНН + название)
+    // — передаём override. Pipeline использует его вместо запроса в DaData.
+    const ip = state.iftsPreview;
+    const hasInn = state.taxAuthorityInn && /^\d{10}$/.test(state.taxAuthorityInn);
+    if (hasInn && ip.name) {
+      stamps.ifts_info_override = {
+        inn: state.taxAuthorityInn,
+        name: ip.name,
+        address: ip.address || '',
+        manager_name: ip.manager_name || '',
+        manager_post: ip.manager_post || '',
+      };
     }
   }
 

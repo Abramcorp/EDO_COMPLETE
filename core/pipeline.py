@@ -39,16 +39,48 @@ log = logging.getLogger(__name__)
 
 
 def _resolve_signing_datetime(override: str | None):
-    """Возвращает datetime подписания: либо из override (ISO8601), либо now() MSK."""
+    """Возвращает datetime подписания: либо из override, либо now() MSK.
+
+    Принимает override в форматах:
+      - ISO8601: 2026-04-25, 2026-04-25T12:30, 2026-04-25T12:30:00+03:00
+      - Русский с точками: 25.04.2026, 25.04.2026 12:30
+      - С дефисами: 25-04-2026
+    """
     from datetime import datetime
     from zoneinfo import ZoneInfo
     msk = ZoneInfo("Europe/Moscow")
-    if override:
-        dt = datetime.fromisoformat(override)
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=msk)
-        return dt.astimezone(msk)
-    return datetime.now(msk)
+    if not override:
+        return datetime.now(msk)
+
+    s = override.strip()
+    dt: datetime | None = None
+
+    # 1. ISO (UI по умолчанию генерит YYYY-MM-DD)
+    try:
+        dt = datetime.fromisoformat(s)
+    except ValueError:
+        pass
+
+    # 2. Русские форматы
+    if dt is None:
+        for fmt in ("%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M", "%d.%m.%Y",
+                    "%d-%m-%Y %H:%M:%S", "%d-%m-%Y %H:%M", "%d-%m-%Y"):
+            try:
+                dt = datetime.strptime(s, fmt)
+                break
+            except ValueError:
+                continue
+
+    if dt is None:
+        raise ValueError(
+            f"Не удалось распарсить дату подписания {override!r}. "
+            f"Поддерживаемые форматы: 2026-04-25, 25.04.2026, 25-04-2026 "
+            f"(с опциональным временем через пробел)."
+        )
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=msk)
+    return dt.astimezone(msk)
 
 
 # ============================================================
@@ -157,15 +189,28 @@ async def run_pipeline(
         return declaration_pdf, f"declaration_{req.taxpayer.inn}_{req.tax_period_year}.pdf"
 
     # -------- 6. Данные ИФНС (нужны для штампов И для квитанций) --------
-    await tracker.emit(PipelineStage.FETCHING_IFTS)
-    try:
-        from modules.edo_stamps import fetch_ifts_data
-        ifts_info = await fetch_ifts_data(
-            ifns_code=req.taxpayer.ifns_code,
-            override_inn=req.stamps.tax_authority_inn,
+    # Если пользователь передал override из UI (заполнил вручную или после DaData preview)
+    # — используем его и не зовём DaData. Это позволяет работать без DADATA_API_KEY.
+    if req.stamps.ifts_info_override is not None:
+        from modules.edo_stamps import IftsInfo
+        ov = req.stamps.ifts_info_override
+        ifts_info = IftsInfo(
+            inn=ov.inn,
+            name=ov.name,
+            address=ov.address,
+            manager_name=ov.manager_name,
+            manager_post=ov.manager_post,
         )
-    except Exception as e:
-        raise DaDataError(f"Ошибка получения данных ИФНС: {e}", cause=e) from e
+    else:
+        await tracker.emit(PipelineStage.FETCHING_IFTS)
+        try:
+            from modules.edo_stamps import fetch_ifts_data
+            ifts_info = await fetch_ifts_data(
+                ifns_code=req.taxpayer.ifns_code,
+                override_inn=req.stamps.tax_authority_inn,
+            )
+        except Exception as e:
+            raise DaDataError(f"Ошибка получения данных ИФНС: {e}", cause=e) from e
 
     # -------- 7. Квитанции ФНС (КНД 1166002 + КНД 1166007) — опционально --------
     full_pdf = declaration_pdf
