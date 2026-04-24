@@ -120,12 +120,17 @@ def build_raster_blank(
     dpi: int = 200,
     padding: float = 3.0,
     page_key: str | None = None,
+    erase_footer_pt: float = 0.0,
 ) -> dict:
     """Растровый blank.pdf. Возвращает статистику.
 
     Args:
         page_key: если fields.json имеет pages_def с несколькими страницами,
             передай ключ (например "1") чтобы стирать только поля этой страницы.
+        erase_footer_pt: если >0, дополнительно стирает нижние N pt страницы
+            (footer-зона для apply_stamps). По эталонам ТЕНЗОРа/КОНТУРа footer
+            занимает ~85pt снизу страницы. Без этой очистки apply_stamps
+            наложит штамп поверх уже существующего эталонного → двоение текста.
     """
     # 1. Растеризуем source_page в PIL Image
     source_bytes = source_path.read_bytes()
@@ -169,6 +174,12 @@ def build_raster_blank(
         draw.rectangle([x0_px, y0_px, x1_px, y1_px], fill=(255, 255, 255))
         erased_count += 1
 
+    # 2b. Стираем footer-зону если задано — для наложения свежего штампа apply_stamps.
+    # PIL-coord: footer сверху на расстоянии footer_pt от bottom страницы.
+    if erase_footer_pt > 0:
+        footer_px_top = int((page_h_pt - erase_footer_pt) * scale)
+        draw.rectangle([0, footer_px_top, img_w_px, img_h_px], fill=(255, 255, 255))
+
     # 3. Вставляем img обратно как image layer в PDF через reportlab
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -205,6 +216,8 @@ def main() -> int:
     parser.add_argument("--padding", type=float, default=3.0)
     parser.add_argument("--page-key", type=str, default=None,
                         help="если fields.json имеет multi-page pages_def, выбирает одну страницу (например '1')")
+    parser.add_argument("--erase-footer-pt", type=float, default=0.0,
+                        help="если >0, стирает нижние N pt страницы (для footer-зоны apply_stamps).")
     args = parser.parse_args()
 
     if not args.source.exists():
@@ -218,6 +231,7 @@ def main() -> int:
         stats = build_raster_blank(
             args.source, args.fields, args.out,
             dpi=args.dpi, padding=args.padding, page_key=args.page_key,
+            erase_footer_pt=args.erase_footer_pt,
         )
     except Exception as e:
         print(f"❌ Ошибка: {e}", file=sys.stderr)
