@@ -577,15 +577,15 @@
       <p class="card-title">Вариант итоговой декларации</p>
 
       <div class="radio-options">
-        <label class="radio-opt selected" data-value="kontur">
-          <input type="radio" name="stamp-variant" value="kontur" checked />
+        <label class="radio-opt disabled" data-value="kontur" style="opacity: 0.45; cursor: not-allowed;" title="Временно недоступен">
+          <input type="radio" name="stamp-variant" value="kontur" disabled />
           <div class="radio-opt-body">
-            <div class="radio-opt-title">Контур.Эльба</div>
+            <div class="radio-opt-title">Контур.Эльба <span style="font-weight:400; font-size:11px; color:var(--text-dim)">(временно недоступен)</span></div>
             <div class="radio-opt-desc">Штамп Контура в футере, без квитанций ФНС (4 страницы)</div>
           </div>
         </label>
-        <label class="radio-opt" data-value="tensor">
-          <input type="radio" name="stamp-variant" value="tensor" />
+        <label class="radio-opt selected" data-value="tensor">
+          <input type="radio" name="stamp-variant" value="tensor" checked />
           <div class="radio-opt-body">
             <div class="radio-opt-title">СБИС / Тензор</div>
             <div class="radio-opt-desc">Штамп Тензора + квитанции ФНС КНД 1166002 и 1166007 (6 страниц)</div>
@@ -624,6 +624,76 @@
       </div>
     </div>
 
+    <div class="card" id="dadata-card">
+      <p class="card-title">Данные ИФНС и начальника (DaData)</p>
+
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="btn-lookup-ifts" style="padding:8px 16px; font-size:13px">
+          Запросить данные из DaData
+        </button>
+        <span class="field-hint" style="margin:0" id="ifts-lookup-info">
+          Система подтянет название, адрес и данные начальника ИФНС.
+        </span>
+      </div>
+
+      <div id="ifts-preview-fields" style="display:none">
+        <label class="field-label">Наименование налогового органа</label>
+        <input type="text" id="ifts-name" placeholder="" style="margin-bottom:14px" />
+
+        <label class="field-label">Адрес</label>
+        <input type="text" id="ifts-address" placeholder="" style="margin-bottom:14px" />
+
+        <div class="row-2">
+          <div>
+            <label class="field-label">Начальник ИФНС (ФИО)</label>
+            <input type="text" id="ifts-manager-name" placeholder="" />
+          </div>
+          <div>
+            <label class="field-label">Должность</label>
+            <input type="text" id="ifts-manager-post" placeholder="" />
+          </div>
+        </div>
+        <div class="field-hint">Эти данные попадают в штамп получателя. При необходимости исправьте.</div>
+      </div>
+    </div>
+
+    <div class="card" id="receipt-params-card">
+      <p class="card-title">Параметры квитанций ФНС (для Тензор/СБИС)</p>
+
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="btn-gen-receipt-params" style="padding:8px 16px; font-size:13px">
+          Сгенерировать параметры
+        </button>
+        <span class="field-hint" style="margin:0" id="receipt-params-info">
+          UUID документа, регистрационный номер ФНС, даты отправки/приёма.
+        </span>
+      </div>
+
+      <div id="receipt-params-fields" style="display:none">
+        <label class="field-label">UUID документа</label>
+        <input type="text" id="receipt-doc-uuid" placeholder="" style="margin-bottom:14px; font-family: monospace; font-size: 12px" />
+
+        <label class="field-label">Регистрационный номер (20 цифр)</label>
+        <input type="text" id="receipt-reg-number" placeholder="" maxlength="20" style="margin-bottom:14px; font-family: monospace" />
+
+        <label class="field-label">Имя файла декларации</label>
+        <input type="text" id="receipt-file-name" placeholder="" style="margin-bottom:14px; font-family: monospace; font-size: 12px" readonly />
+        <div class="field-hint" style="margin-top: -10px; margin-bottom: 14px">Формируется автоматически из ИНН, ИФНС, даты и UUID</div>
+
+        <div class="row-2">
+          <div>
+            <label class="field-label">Дата отправки в ФНС</label>
+            <input type="text" id="receipt-submission-date" placeholder="ISO формат" />
+          </div>
+          <div>
+            <label class="field-label">Дата приёма ФНС</label>
+            <input type="text" id="receipt-acceptance-date" placeholder="ISO формат" />
+          </div>
+        </div>
+        <div class="field-hint">Если оставить пустыми — будут сгенерированы автоматически.</div>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn btn-secondary" id="btn-step4-back">← Назад</button>
       <button class="btn btn-primary" id="btn-step4-next">Сгенерировать декларацию</button>
@@ -659,10 +729,12 @@ const state = {
   personnel: { has_employees: false, num_employees: 0, avg_salary: 0, employee_start_quarter: null },
   contributions: { q1: 0, half_year: 0, nine_months: 0, year: 0 },
   taxpayer: { inn: '', fio: '', oktmo: '', ifns_code: '' },
-  stampVariant: 'kontur',
+  stampVariant: 'tensor',
   correctionNumber: 0,
   signingDate: '',
   taxAuthorityInn: '',
+  iftsPreview: { name: '', address: '', manager_name: '', manager_post: '' },
+  receiptParams: { document_uuid: '', registration_number: '', file_name: '', submission_datetime: '', acceptance_datetime: '' },
   jobId: null,
 };
 
@@ -920,7 +992,12 @@ document.getElementById('oktmo').addEventListener('input', e => { state.taxpayer
 document.getElementById('ifns-code').addEventListener('input', e => { state.taxpayer.ifns_code = e.target.value.trim(); });
 
 document.querySelectorAll('.radio-opt').forEach(opt => {
-  opt.onclick = () => {
+  opt.onclick = (e) => {
+    // Игнорируем клики по disabled опциям (временно выключенный Контур)
+    if (opt.classList.contains('disabled')) {
+      e.preventDefault();
+      return;
+    }
     document.querySelectorAll('.radio-opt').forEach(o => o.classList.remove('selected'));
     opt.classList.add('selected');
     const inp = opt.querySelector('input[type=radio]');
@@ -941,6 +1018,144 @@ document.getElementById('signing-date').addEventListener('input', e => {
 });
 document.getElementById('tax-authority-inn').addEventListener('input', e => {
   state.taxAuthorityInn = e.target.value.trim();
+});
+
+// ========== DaData: запрос данных ИФНС ==========
+document.getElementById('btn-lookup-ifts').onclick = async () => {
+  const btn = document.getElementById('btn-lookup-ifts');
+  const info = document.getElementById('ifts-lookup-info');
+  const ifnsCode = state.taxpayer.ifns_code;
+  if (!/^\d{4}$/.test(ifnsCode)) {
+    info.textContent = '✗ Сначала укажите 4-значный код ИФНС (поле выше)';
+    info.style.color = 'var(--danger)';
+    return;
+  }
+  btn.disabled = true;
+  const prevText = btn.textContent;
+  btn.textContent = 'Запрос…';
+  info.textContent = '';
+  try {
+    const body = { ifns_code: ifnsCode };
+    if (state.taxAuthorityInn && /^\d{10}$/.test(state.taxAuthorityInn)) {
+      body.tax_authority_inn = state.taxAuthorityInn;
+    }
+    const resp = await fetch('/api/dadata/lookup-ifts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+      throw new Error(err.detail || `HTTP ${resp.status}`);
+    }
+    const data = await resp.json();
+    document.getElementById('ifts-name').value = data.name || '';
+    document.getElementById('ifts-address').value = data.address || '';
+    document.getElementById('ifts-manager-name').value = data.manager_name || '';
+    document.getElementById('ifts-manager-post').value = data.manager_post || '';
+    state.iftsPreview = {
+      name: data.name || '',
+      address: data.address || '',
+      manager_name: data.manager_name || '',
+      manager_post: data.manager_post || '',
+    };
+    if (data.inn && !state.taxAuthorityInn) {
+      state.taxAuthorityInn = data.inn;
+      document.getElementById('tax-authority-inn').value = data.inn;
+    }
+    document.getElementById('ifts-preview-fields').style.display = 'block';
+    info.textContent = '✓ Данные получены. При необходимости исправьте.';
+    info.style.color = 'var(--success)';
+  } catch (e) {
+    info.textContent = `✗ ${e.message}. Заполните вручную.`;
+    info.style.color = 'var(--danger)';
+    document.getElementById('ifts-preview-fields').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevText;
+  }
+};
+
+// Синхронизация input полей ИФНС → state
+['name', 'address', 'manager-name', 'manager-post'].forEach(k => {
+  const el = document.getElementById('ifts-' + k);
+  if (!el) return;
+  const key = k === 'manager-name' ? 'manager_name'
+            : k === 'manager-post' ? 'manager_post'
+            : k;
+  el.addEventListener('input', e => { state.iftsPreview[key] = e.target.value.trim(); });
+});
+
+// ========== Receipt Params: генерация UUID, регномера, дат ==========
+document.getElementById('btn-gen-receipt-params').onclick = async () => {
+  const btn = document.getElementById('btn-gen-receipt-params');
+  const info = document.getElementById('receipt-params-info');
+  const t = state.taxpayer;
+  if (!/^\d{10}$|^\d{12}$/.test(t.inn)) {
+    info.textContent = '✗ Сначала укажите ИНН налогоплательщика (10 или 12 цифр)';
+    info.style.color = 'var(--danger)';
+    return;
+  }
+  if (!/^\d{4}$/.test(t.ifns_code)) {
+    info.textContent = '✗ Сначала укажите 4-значный код ИФНС';
+    info.style.color = 'var(--danger)';
+    return;
+  }
+  btn.disabled = true;
+  const prevText = btn.textContent;
+  btn.textContent = 'Генерирую…';
+  info.textContent = '';
+  try {
+    const body = {
+      operator: state.stampVariant === 'none' ? 'tensor' : state.stampVariant,
+      ifns_code: t.ifns_code,
+      declarant_inn: t.inn,
+    };
+    if (state.signingDate) body.signing_datetime = state.signingDate;
+    const resp = await fetch('/api/receipt/preview-params', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+      throw new Error(err.detail || `HTTP ${resp.status}`);
+    }
+    const data = await resp.json();
+    document.getElementById('receipt-doc-uuid').value = data.document_uuid;
+    document.getElementById('receipt-reg-number').value = data.registration_number;
+    document.getElementById('receipt-file-name').value = data.file_name;
+    document.getElementById('receipt-submission-date').value = data.submission_datetime;
+    document.getElementById('receipt-acceptance-date').value = data.acceptance_datetime;
+    state.receiptParams = {
+      document_uuid: data.document_uuid,
+      registration_number: data.registration_number,
+      file_name: data.file_name,
+      submission_datetime: data.submission_datetime,
+      acceptance_datetime: data.acceptance_datetime,
+    };
+    document.getElementById('receipt-params-fields').style.display = 'block';
+    info.textContent = '✓ Параметры сгенерированы. При необходимости исправьте.';
+    info.style.color = 'var(--success)';
+  } catch (e) {
+    info.textContent = `✗ ${e.message}`;
+    info.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevText;
+  }
+};
+
+// Синхронизация полей квитанции → state
+[
+  ['receipt-doc-uuid', 'document_uuid'],
+  ['receipt-reg-number', 'registration_number'],
+  ['receipt-submission-date', 'submission_datetime'],
+  ['receipt-acceptance-date', 'acceptance_datetime'],
+].forEach(([elId, stateKey]) => {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.addEventListener('input', e => { state.receiptParams[stateKey] = e.target.value.trim(); });
 });
 
 document.getElementById('btn-step4-back').onclick = () => goToStep(3);
@@ -1038,6 +1253,13 @@ function buildMeta() {
         manager_post: ip.manager_post || '',
       };
     }
+    // Override параметров квитанций — отправляем только то что заполнено.
+    // Pustoe поле = pipeline генерит сам.
+    const rp = state.receiptParams;
+    if (rp.document_uuid) stamps.document_uuid_override = rp.document_uuid;
+    if (rp.registration_number) stamps.registration_number_override = rp.registration_number;
+    if (rp.submission_datetime) stamps.submission_datetime_override = rp.submission_datetime;
+    if (rp.acceptance_datetime) stamps.acceptance_datetime_override = rp.acceptance_datetime;
   }
 
   const personnel = state.personnel.has_employees ? {

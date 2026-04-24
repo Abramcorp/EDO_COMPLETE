@@ -299,6 +299,10 @@ def build_receipt_pages(
     correction_number: int,
     ifts_info: IftsInfo,
     signing_datetime: datetime,
+    document_uuid_override: str | None = None,
+    registration_number_override: str | None = None,
+    submission_datetime_override: datetime | None = None,
+    acceptance_datetime_override: datetime | None = None,
 ) -> bytes:
     """
     Рендерит 2 страницы квитанций как единый PDF:
@@ -309,8 +313,14 @@ def build_receipt_pages(
     templates/knd_NNNNNNN/fields.json, накладывает overlay через reportlab,
     merge'ит через pypdf (zero-loss).
 
-    Данные (UUID, имя файла, регистрационный номер, таймстампы) — генерируются
-    здесь через receipt_data.* функции.
+    Данные (UUID, имя файла, регистрационный номер, таймстампы) генерируются
+    здесь через receipt_data.* функции — если не переданы override-параметры.
+
+    Args:
+        document_uuid_override: UUID документа (если None — генерируется)
+        registration_number_override: 20-значный регистрационный номер
+        submission_datetime_override: дата отправки в ФНС
+        acceptance_datetime_override: дата приёма ФНС
     """
     from .receipt_data import (
         compute_receipt_timestamps,
@@ -322,8 +332,8 @@ def build_receipt_pages(
 
     op_value = operator.value if hasattr(operator, "value") else str(operator)
 
-    # Генерируем все реквизиты один раз — одни и те же на обеих страницах
-    doc_uuid = generate_document_uuid(op_value)  # type: ignore[arg-type]
+    # Реквизиты: используем override если переданы, иначе автогенерация.
+    doc_uuid = document_uuid_override or generate_document_uuid(op_value)  # type: ignore[arg-type]
     file_name = generate_file_name(
         operator=op_value,  # type: ignore[arg-type]
         ifns_code=taxpayer.ifns_code,
@@ -331,11 +341,13 @@ def build_receipt_pages(
         date=signing_datetime,
         document_uuid=doc_uuid,
     )
-    reg_number = generate_registration_number()
+    reg_number = registration_number_override or generate_registration_number()
     timestamps = compute_receipt_timestamps(
         signing_datetime=signing_datetime,
         operator=op_value,  # type: ignore[arg-type]
     )
+    submission_dt = submission_datetime_override or timestamps.submission
+    acceptance_dt = acceptance_datetime_override or timestamps.acceptance
 
     # Разбиение полного имени ИФНС на 2 строки (как в шаблоне КНД 1166002).
     # Эвристика: делим примерно пополам по ближайшему пробелу.
@@ -363,8 +375,8 @@ def build_receipt_pages(
         correction_number=correction_number,
         tax_period_year=tax_period_year,
         file_name=file_name,
-        submission_datetime=timestamps.submission,
-        acceptance_datetime=timestamps.acceptance,
+        submission_datetime=submission_dt,
+        acceptance_datetime=acceptance_dt,
         registration_number=reg_number,
     )
 

@@ -46,18 +46,21 @@ class TestBlank2025:
             # Проверяем портретная ориентация
             assert h > w, f"стр.{i+1}: должна быть портретная (h>w), но {h} <= {w}"
 
-    def test_no_text_layer(self, blank_reader):
+    def test_has_field_labels(self, blank_reader):
         """
-        Raster-blank НЕ должен содержать text layer (только embedded image).
-        Это критично для рендера — overlay текст не будет конфликтовать.
+        Vector blank должен сохранять текстовые подписи полей (клеточки и
+        подписи — часть эталона ФНС). Проверяем наличие ключевых маркеров.
         """
-        for i, page in enumerate(blank_reader.pages):
-            text = page.extract_text() or ""
-            # Должно быть очень мало текста (или вообще пусто) —
-            # raster PDF не имеет text stream, только image
-            assert len(text.strip()) < 20, (
-                f"стр.{i+1}: blank содержит text_layer ({len(text)} символов): "
-                f"'{text[:80]}'. Raster-бланк должен быть без текста."
+        all_text = "\n".join(
+            (page.extract_text() or "")
+            for page in blank_reader.pages
+        )
+        # Ключевые маркеры формы КНД 1152017
+        expected = ["КНД 1152017", "Номер корректировки", "ИНН"]
+        for marker in expected:
+            assert marker in all_text, (
+                f"Blank не содержит ожидаемый маркер {marker!r}. "
+                f"Возможно, файл повреждён или используется не тот источник."
             )
 
     def test_no_empty_pages(self, blank_reader):

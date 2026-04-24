@@ -17,7 +17,7 @@ from sqlalchemy import text
 from api.db import SessionLocal, dispose_db, init_db
 from api.jobs import JobStore
 from api.models import HealthResponse
-from api.routers import complete, contributions, jobs
+from api.routers import complete, contributions, dadata, jobs, receipt
 
 __version__ = "0.1.0"
 
@@ -97,6 +97,8 @@ app.add_middleware(
 app.include_router(complete.router)
 app.include_router(jobs.router)
 app.include_router(contributions.router)
+app.include_router(dadata.router)
+app.include_router(receipt.router)
 
 
 # Health check
