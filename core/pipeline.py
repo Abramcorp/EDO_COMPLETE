@@ -108,6 +108,24 @@ async def run_pipeline(
     except Exception as e:
         raise ClassificationError(f"Ошибка классификации операций: {e}", cause=e) from e
 
+    # -------- 3b. Override помесячных доходов (если пришёл из UI-wizard) --------
+    # Пользователь мог отредактировать доходы на шаге 2 wizard'а — его значения
+    # должны перебить результат автоклассификации.
+    # Переводим помесячные суммы (безнал+нал) в квартальные для ClassifiedOps.
+    if req.monthly_income_override:
+        from decimal import Decimal
+        # classified хранит квартальные суммы — перезаписываем
+        classified.q1 = Decimal("0")
+        classified.q2 = Decimal("0")
+        classified.q3 = Decimal("0")
+        classified.q4 = Decimal("0")
+        for item in req.monthly_income_override:
+            total_for_month = item.cashless + item.cash
+            q = (item.month - 1) // 3 + 1
+            setattr(classified, f"q{q}", getattr(classified, f"q{q}") + total_for_month)
+        # ОФД-чеки уже учтены в override'е — обнуляем чтобы tax_engine не удвоил
+        ofd_receipts = []
+
     # -------- 4. Расчёт налога --------
     await tracker.emit(PipelineStage.CALCULATING_TAX)
     try:

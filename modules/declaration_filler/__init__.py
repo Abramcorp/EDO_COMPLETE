@@ -205,6 +205,35 @@ def _classify_operations(stmt: Statement) -> ClassifiedOps:
     return result
 
 
+def _classify_operations_monthly(stmt: Statement, *, year: int) -> dict[int, Decimal]:
+    """Агрегирует доходы помесячно за указанный год. Для UI-preview.
+
+    Returns: {1: Decimal, 2: Decimal, ..., 12: Decimal}
+    """
+    clf = _make_stateless_classifier()
+    ops_dicts = [
+        {
+            "operation_date": op.operation_date,
+            "amount": op.amount,
+            "direction": op.direction,
+            "purpose": op.purpose,
+            "counterparty": op.counterparty,
+            "counterparty_inn": op.counterparty_inn,
+        }
+        for op in stmt.operations
+    ]
+    classified = clf.classify_batch(ops_dicts)
+
+    monthly: dict[int, Decimal] = {m: Decimal("0") for m in range(1, 13)}
+    for op, cls in zip(stmt.operations, classified, strict=True):
+        if cls.get("classification") != "income" or op.direction != "income":
+            continue
+        if op.operation_date.year != year:
+            continue
+        monthly[op.operation_date.month] += op.amount
+    return monthly
+
+
 # ============================================================
 # tax_engine.calculate
 # ============================================================
@@ -393,6 +422,7 @@ __all__ = [
     "parse_1c_statement_bytes",
     "parse_ofd_bytes",
     "classify_operations",
+    "classify_operations_monthly",
     "tax_engine_calculate",
     "render_declaration_pdf",
 ]
@@ -402,3 +432,4 @@ __all__ = [
 parse_1c_statement_bytes = _parse_1c_statement_bytes
 parse_ofd_bytes = _parse_ofd_bytes
 classify_operations = _classify_operations
+classify_operations_monthly = _classify_operations_monthly

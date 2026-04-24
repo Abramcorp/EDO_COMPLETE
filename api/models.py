@@ -112,6 +112,13 @@ class StampsConfig(BaseModel):
     signing_datetime_override: Optional[str] = None  # ISO8601
 
 
+class MonthlyIncomeItem(BaseModel):
+    """Помесячный доход (используется как override — значения с UI-wizard'а)."""
+    month: int = Field(..., ge=1, le=12)
+    cashless: Decimal = Field(Decimal("0"), ge=0, description="Безнал за месяц")
+    cash: Decimal = Field(Decimal("0"), ge=0, description="Наличка за месяц")
+
+
 class DeclarationRequest(BaseModel):
     """Единая модель заявки — передаётся в поле `meta` multipart-формы как JSON."""
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -121,6 +128,9 @@ class DeclarationRequest(BaseModel):
     contributions: ContributionsInfo = ContributionsInfo()
     personnel: PersonnelInfo = PersonnelInfo()
     stamps: StampsConfig = StampsConfig()
+    # Если передан — используется вместо пересчёта из выписки.
+    # Формируется UI-wizard'ом после шага 2 (пользователь отредактировал).
+    monthly_income_override: Optional[list[MonthlyIncomeItem]] = None
 
 
 # ============================================================

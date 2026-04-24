@@ -10,10 +10,13 @@
     --surface: #1a2027;
     --surface-2: #242b33;
     --border: #323a45;
+    --border-strong: #4a5663;
     --text: #e6edf3;
     --text-dim: #8b949e;
+    --text-weak: #646d78;
     --accent: #58a6ff;
     --accent-hover: #79b8ff;
+    --accent-bg: rgba(88, 166, 255, 0.08);
     --success: #3fb950;
     --danger: #f85149;
     --warning: #d29922;
@@ -25,30 +28,74 @@
     background: var(--bg);
     color: var(--text);
     line-height: 1.5;
+    font-size: 14px;
   }
   .container {
-    max-width: 780px;
+    max-width: 820px;
     margin: 0 auto;
-    padding: 32px 20px;
+    padding: 32px 20px 48px;
   }
   h1 {
-    margin: 0 0 8px;
+    margin: 0 0 4px;
     font-weight: 600;
-    font-size: 24px;
+    font-size: 22px;
   }
   .subtitle {
     color: var(--text-dim);
-    margin-bottom: 32px;
-    font-size: 14px;
+    margin-bottom: 28px;
+    font-size: 13px;
   }
+
+  /* Stepper */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    padding: 0 4px;
+  }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .step-dot.active {
+    background: var(--accent);
+    color: #0f1419;
+    border-color: var(--accent);
+  }
+  .step-dot.done {
+    background: var(--success);
+    color: #0f1419;
+    border-color: var(--success);
+  }
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .step-line.done { background: var(--success); }
+
+  /* Cards */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 24px;
     margin-bottom: 16px;
   }
-  .section-title {
+  .card-title {
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
@@ -56,26 +103,28 @@
     letter-spacing: 0.5px;
     margin: 0 0 16px;
   }
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  .row:last-child { margin-bottom: 0; }
-  .field { display: flex; flex-direction: column; }
-  label {
+  .field-label {
+    display: block;
     font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 4px;
     font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 6px;
   }
+  .field-label .req { color: var(--danger); }
+  .field-hint {
+    font-size: 11px;
+    color: var(--text-weak);
+    margin-top: 4px;
+  }
+
+  /* Inputs */
   input[type="text"], input[type="number"], select {
-    background: var(--surface-2);
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--bg);
     border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 12px;
     border-radius: 6px;
+    color: var(--text);
     font-size: 14px;
     font-family: inherit;
     outline: none;
@@ -83,309 +132,843 @@
   }
   input[type="text"]:focus, input[type="number"]:focus, select:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
   }
-  input[type="file"] {
-    background: var(--surface-2);
-    border: 1px dashed var(--border);
-    color: var(--text-dim);
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 13px;
+  input[type="number"] { font-variant-numeric: tabular-nums; }
+  input:disabled, select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* File upload */
+  .file-drop {
+    display: block;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
     cursor: pointer;
-    width: 100%;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--bg);
   }
-  input[type="file"]:hover { border-color: var(--accent); }
-  .checkbox {
-    display: flex;
+  .file-drop:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .file-drop.active { border-color: var(--accent); background: var(--accent-bg); }
+  .file-drop input[type="file"] { display: none; }
+  .file-drop-label { color: var(--text-dim); font-size: 13px; }
+  .file-drop-label strong { color: var(--accent); font-weight: 500; }
+  .file-chip {
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 16px;
-  }
-  .checkbox input { width: 16px; height: 16px; }
-  button {
-    background: var(--accent);
-    color: #0d1117;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.15s;
-    width: 100%;
-  }
-  button:hover:not(:disabled) { background: var(--accent-hover); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .progress-wrapper { display: none; margin-top: 16px; }
-  .progress-wrapper.active { display: block; }
-  .progress-bar {
-    height: 6px;
+    padding: 5px 11px;
     background: var(--surface-2);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-size: 12px;
+    color: var(--text);
+    margin-top: 10px;
   }
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    width: 0%;
-    transition: width 0.3s;
-  }
-  .progress-fill.complete { background: var(--success); }
-  .progress-fill.failed { background: var(--danger); }
-  .stage-label {
-    font-size: 13px;
+  .file-chip-remove {
+    cursor: pointer;
     color: var(--text-dim);
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .file-chip-remove:hover { color: var(--danger); }
+
+  /* Grid */
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 680px) {
+    .row-2, .row-4 { grid-template-columns: 1fr; }
+  }
+
+  /* Monthly table */
+  table.monthly {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  table.monthly th {
+    text-align: left;
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.monthly th.num { text-align: right; }
+  table.monthly td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.monthly td.month-name {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  table.monthly td input {
+    text-align: right;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  table.monthly tr.total td {
+    border-bottom: none;
+    border-top: 2px solid var(--border-strong);
+    font-weight: 600;
+    padding-top: 12px;
+  }
+  table.monthly tr.total .sum {
+    text-align: right;
+    padding-right: 12px;
+  }
+
+  /* Checkbox + radio */
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .checkbox-row:hover { border-color: var(--border-strong); }
+  .checkbox-row input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+  .radio-options { display: grid; gap: 10px; }
+  .radio-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .radio-opt:hover { border-color: var(--border-strong); }
+  .radio-opt.selected {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .radio-opt input[type="radio"] {
+    margin-top: 2px;
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+  }
+  .radio-opt-body { flex: 1; }
+  .radio-opt-title { font-weight: 600; margin-bottom: 2px; }
+  .radio-opt-desc { font-size: 12px; color: var(--text-dim); }
+
+  /* Buttons */
+  .actions {
     display: flex;
     justify-content: space-between;
+    gap: 12px;
+    margin-top: 20px;
   }
-  .result-box {
-    display: none;
-    margin-top: 16px;
-    padding: 16px;
+  button.btn {
+    padding: 10px 22px;
+    border: none;
     border-radius: 6px;
     font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
   }
-  .result-box.success {
-    display: block;
-    background: rgba(63, 185, 80, 0.1);
-    border: 1px solid var(--success);
-    color: var(--success);
+  button.btn-primary {
+    background: var(--accent);
+    color: #0f1419;
   }
-  .result-box.error {
-    display: block;
-    background: rgba(248, 81, 73, 0.1);
-    border: 1px solid var(--danger);
-    color: var(--danger);
+  button.btn-primary:hover { background: var(--accent-hover); }
+  button.btn-secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
   }
-  .result-box a {
-    color: inherit;
+  button.btn-secondary:hover { background: var(--border); }
+  button.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Info box */
+  .info-box {
+    background: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  .info-box.warn {
+    background: rgba(210, 153, 34, 0.08);
+    border-left-color: var(--warning);
+  }
+  .info-box.danger {
+    background: rgba(248, 81, 73, 0.08);
+    border-left-color: var(--danger);
+    color: var(--text);
+  }
+
+  /* Progress */
+  .progress-wrap {
+    background: var(--bg);
+    border-radius: 8px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+    margin-bottom: 14px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  /* Download */
+  .download-big {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: var(--success);
+    color: #0f1419;
+    border-radius: 6px;
     font-weight: 600;
-    text-decoration: underline;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .download-big:hover { background: #4fc663; }
+
+  /* Step visibility */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
   }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>USN_COMPLETE</h1>
-  <p class="subtitle">Генератор подписанной декларации УСН 6% (КНД 1152017)</p>
+  <p class="subtitle">Декларация УСН 6% (КНД 1152017) с подписями ЭДО — за 5 шагов</p>
 
-  <form id="form">
-    <div class="card">
-      <h2 class="section-title">Налогоплательщик</h2>
-      <div class="row">
-        <div class="field">
-          <label>ИНН</label>
-          <input type="text" name="inn" required pattern="\d{10}|\d{12}" placeholder="770123456789" />
-        </div>
-        <div class="field">
-          <label>Код ИФНС</label>
-          <input type="text" name="ifns_code" required pattern="\d{4}" placeholder="7701" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="field" style="grid-column: 1 / -1;">
-          <label>ФИО</label>
-          <input type="text" name="fio" required placeholder="Иванов Иван Иванович" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label>ОКТМО</label>
-          <input type="text" name="oktmo" required pattern="\d{8}|\d{11}" placeholder="45382000" />
-        </div>
-        <div class="field">
-          <label>Налоговый период (год)</label>
-          <input type="number" name="tax_period_year" required min="2020" max="2030" value="2024" />
-        </div>
-      </div>
-    </div>
+  <div class="stepper">
+    <div class="step-dot active" data-step="1">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot" data-step="2">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot" data-step="3">3</div>
+    <div class="step-line"></div>
+    <div class="step-dot" data-step="4">4</div>
+    <div class="step-line"></div>
+    <div class="step-dot" data-step="5">5</div>
+  </div>
 
+  <!-- STEP 1: Файлы + год -->
+  <div class="step-panel active" data-panel="1">
     <div class="card">
-      <h2 class="section-title">Страховые взносы (накопительно, ₽)</h2>
-      <div class="row">
-        <div class="field">
-          <label>На 31 марта</label>
-          <input type="number" name="c_q1" value="0" min="0" step="0.01" />
+      <p class="card-title">Шаг 1. Загрузка выписки</p>
+
+      <label class="field-label">Отчётный год <span class="req">*</span></label>
+      <select id="year">
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2026">2026</option>
+      </select>
+      <div class="field-hint" style="margin-bottom: 20px">Год, за который формируется декларация</div>
+
+      <label class="field-label">1С-выписка (.txt) <span class="req">*</span></label>
+      <label class="file-drop" id="drop-statement">
+        <input type="file" id="statement-file" accept=".txt" />
+        <div class="file-drop-label">
+          <strong>Выбрать файл</strong> или перетащите сюда
         </div>
-        <div class="field">
-          <label>На 30 июня</label>
-          <input type="number" name="c_half_year" value="0" min="0" step="0.01" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label>На 30 сентября</label>
-          <input type="number" name="c_nine_months" value="0" min="0" step="0.01" />
-        </div>
-        <div class="field">
-          <label>На 31 декабря</label>
-          <input type="number" name="c_year" value="49500" min="0" step="0.01" />
-        </div>
-      </div>
+      </label>
+      <div id="statement-chip" style="display:none"></div>
+      <div class="field-hint">Файл выписки из 1С в формате TXT</div>
     </div>
 
     <div class="card">
-      <h2 class="section-title">Работники</h2>
-      <div class="checkbox">
-        <input type="checkbox" id="has_employees" name="has_employees" />
-        <label for="has_employees" style="margin: 0; color: var(--text);">Есть работники</label>
+      <p class="card-title">Чеки ОФД (опционально)</p>
+
+      <label class="file-drop" id="drop-ofd">
+        <input type="file" id="ofd-file" accept=".xlsx,.xls" />
+        <div class="file-drop-label">
+          <strong>Выбрать файл</strong> или перетащите сюда
+        </div>
+      </label>
+      <div id="ofd-chip" style="display:none"></div>
+      <div class="field-hint">Если есть наличная выручка — загрузите чеки ОФД (.xlsx)</div>
+    </div>
+
+    <div class="actions">
+      <span></span>
+      <button class="btn btn-primary" id="btn-step1-next" disabled>
+        Далее: проверить доходы →
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Помесячные доходы -->
+  <div class="step-panel" data-panel="2">
+    <div class="card">
+      <p class="card-title">Шаг 2. Доходы помесячно</p>
+
+      <div class="info-box" id="parse-info">Загрузка и парсинг…</div>
+
+      <table class="monthly">
+        <thead>
+          <tr>
+            <th>Месяц</th>
+            <th class="num">Безнал (₽)</th>
+            <th class="num">Наличные (₽)</th>
+            <th class="num">Итого (₽)</th>
+          </tr>
+        </thead>
+        <tbody id="monthly-body"></tbody>
+        <tfoot>
+          <tr class="total">
+            <td>Итого за год</td>
+            <td class="sum" id="total-cashless">0</td>
+            <td class="sum" id="total-cash">0</td>
+            <td class="sum" id="total-all">0</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="field-hint" style="margin-top:10px">
+        Значения автоматически распознаны из выписки. При необходимости исправьте вручную.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" id="btn-step2-back">← Назад</button>
+      <button class="btn btn-primary" id="btn-step2-next">Далее: работники и взносы →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Работники + взносы -->
+  <div class="step-panel" data-panel="3">
+    <div class="card">
+      <p class="card-title">Шаг 3. Работники</p>
+
+      <label class="checkbox-row" style="margin-bottom:14px">
+        <input type="checkbox" id="has-employees" />
+        <span>У меня есть наёмные работники</span>
+      </label>
+
+      <div id="employees-details" style="display:none">
+        <div class="row-2">
+          <div>
+            <label class="field-label">Численность работников</label>
+            <input type="number" id="num-employees" min="0" value="0" />
+          </div>
+          <div>
+            <label class="field-label">Среднемесячный ФОТ (₽)</label>
+            <input type="number" id="avg-salary" min="0" step="0.01" value="0" />
+          </div>
+        </div>
+        <div>
+          <label class="field-label">С какого квартала есть работники</label>
+          <select id="employee-start-quarter">
+            <option value="1">1 квартал (январь)</option>
+            <option value="2">2 квартал (апрель)</option>
+            <option value="3">3 квартал (июль)</option>
+            <option value="4">4 квартал (октябрь)</option>
+          </select>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <h2 class="section-title">Файлы</h2>
-      <div class="field" style="margin-bottom: 12px;">
-        <label>1С-выписка (.txt) *</label>
-        <input type="file" name="statement" accept=".txt" required />
+      <p class="card-title">Страховые взносы ИП (накопительно, ₽)</p>
+
+      <div class="info-box">
+        Суммы уплаченных страховых взносов на конец каждого отчётного периода.<br>
+        Значения <b>накопительные</b>: за 9 месяцев = взносы с 1 января по 30 сентября.
       </div>
-      <div class="field">
-        <label>Чеки ОФД (.xlsx) — опционально</label>
-        <input type="file" name="ofd" accept=".xlsx,.xls" />
+
+      <div class="row-4">
+        <div>
+          <label class="field-label">На 31 марта (Q1)</label>
+          <input type="number" id="contrib-q1" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label class="field-label">На 30 июня (H1)</label>
+          <input type="number" id="contrib-h1" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label class="field-label">На 30 сентября (9M)</label>
+          <input type="number" id="contrib-9m" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label class="field-label">На 31 декабря (Год)</label>
+          <input type="number" id="contrib-y" min="0" step="0.01" value="0" />
+        </div>
       </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" id="btn-step3-back">← Назад</button>
+      <button class="btn btn-primary" id="btn-step3-next">Далее: реквизиты →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Реквизиты + штампы -->
+  <div class="step-panel" data-panel="4">
+    <div class="card">
+      <p class="card-title">Шаг 4. Реквизиты налогоплательщика</p>
+
+      <div class="row-2">
+        <div>
+          <label class="field-label">ИНН <span class="req">*</span></label>
+          <input type="text" id="inn" maxlength="12" placeholder="10 или 12 цифр" />
+          <div class="field-hint" id="inn-hint"></div>
+        </div>
+        <div>
+          <label class="field-label">Код ИФНС <span class="req">*</span></label>
+          <input type="text" id="ifns-code" maxlength="4" placeholder="4 цифры" />
+        </div>
+      </div>
+
+      <label class="field-label">ФИО <span class="req">*</span></label>
+      <input type="text" id="fio" placeholder="Иванов Иван Иванович" style="margin-bottom:14px" />
+
+      <label class="field-label">ОКТМО <span class="req">*</span></label>
+      <input type="text" id="oktmo" maxlength="11" placeholder="8 или 11 цифр" />
+      <div class="field-hint">Код ОКТМО по месту жительства ИП</div>
     </div>
 
     <div class="card">
-      <h2 class="section-title">Штампы ЭДО</h2>
-      <div class="checkbox">
-        <input type="checkbox" id="stamps_enabled" name="stamps_enabled" checked />
-        <label for="stamps_enabled" style="margin: 0; color: var(--text);">Наложить штампы ЭДО</label>
-      </div>
-      <div class="field">
-        <label>Оператор</label>
-        <select name="operator">
-          <option value="kontur">Контур.Эльба</option>
-          <option value="tensor">СБИС / Тензор</option>
-        </select>
+      <p class="card-title">Вариант итоговой декларации</p>
+
+      <div class="radio-options">
+        <label class="radio-opt selected" data-value="kontur">
+          <input type="radio" name="stamp-variant" value="kontur" checked />
+          <div class="radio-opt-body">
+            <div class="radio-opt-title">Контур.Эльба</div>
+            <div class="radio-opt-desc">Штамп Контура в футере, без квитанций ФНС (4 страницы)</div>
+          </div>
+        </label>
+        <label class="radio-opt" data-value="tensor">
+          <input type="radio" name="stamp-variant" value="tensor" />
+          <div class="radio-opt-body">
+            <div class="radio-opt-title">СБИС / Тензор</div>
+            <div class="radio-opt-desc">Штамп Тензора + квитанции ФНС КНД 1166002 и 1166007 (6 страниц)</div>
+          </div>
+        </label>
+        <label class="radio-opt" data-value="none">
+          <input type="radio" name="stamp-variant" value="none" />
+          <div class="radio-opt-body">
+            <div class="radio-opt-title">Без штампа</div>
+            <div class="radio-opt-desc">Чистая декларация без подписей ЭДО — для печати и сдачи вручную</div>
+          </div>
+        </label>
       </div>
     </div>
 
-    <button type="submit" id="submit-btn">Сгенерировать декларацию</button>
+    <div class="actions">
+      <button class="btn btn-secondary" id="btn-step4-back">← Назад</button>
+      <button class="btn btn-primary" id="btn-step4-next">Сгенерировать декларацию</button>
+    </div>
+  </div>
 
-    <div class="progress-wrapper" id="progress">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
+  <!-- STEP 5: Прогресс + результат -->
+  <div class="step-panel" data-panel="5">
+    <div class="card">
+      <p class="card-title">Шаг 5. Генерация</p>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
       </div>
-      <div class="stage-label">
-        <span id="stage-text">Инициализация…</span>
-        <span id="progress-text">0%</span>
-      </div>
+      <div class="progress-label" id="progress-label">Подготовка…</div>
+
+      <div id="generation-result" style="display:none; margin-top:20px"></div>
     </div>
 
-    <div class="result-box" id="result"></div>
-  </form>
+    <div class="actions">
+      <button class="btn btn-secondary" id="btn-step5-restart" style="display:none">Создать ещё одну</button>
+    </div>
+  </div>
 </div>
 
 <script>
-const STAGE_LABELS = {
-  initializing: "Инициализация",
-  parsing_statement: "Разбор 1С-выписки",
-  parsing_ofd: "Разбор чеков ОФД",
-  classifying: "Классификация операций",
-  calculating_tax: "Расчёт налога",
-  rendering_declaration: "Рендер декларации",
-  fetching_ifts: "Получение данных ИФНС",
-  rendering_stamps: "Наложение штампов",
-  complete: "Готово",
+const state = {
+  step: 1,
+  files: { statement: null, ofd: null },
+  year: 2025,
+  parse: null,
+  monthly: [],
+  personnel: { has_employees: false, num_employees: 0, avg_salary: 0, employee_start_quarter: null },
+  contributions: { q1: 0, half_year: 0, nine_months: 0, year: 0 },
+  taxpayer: { inn: '', fio: '', oktmo: '', ifns_code: '' },
+  stampVariant: 'kontur',
+  jobId: null,
 };
 
-const form = document.getElementById('form');
-const submitBtn = document.getElementById('submit-btn');
-const progress = document.getElementById('progress');
-const progressFill = document.getElementById('progress-fill');
-const progressText = document.getElementById('progress-text');
-const stageText = document.getElementById('stage-text');
-const result = document.getElementById('result');
+function goToStep(n) {
+  state.step = n;
+  document.querySelectorAll('.step-panel').forEach(p => {
+    p.classList.toggle('active', Number(p.dataset.panel) === n);
+  });
+  document.querySelectorAll('.step-dot').forEach(d => {
+    const s = Number(d.dataset.step);
+    d.classList.toggle('active', s === n);
+    d.classList.toggle('done', s < n);
+  });
+  document.querySelectorAll('.step-line').forEach((l, i) => {
+    l.classList.toggle('done', i + 1 < n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  submitBtn.disabled = true;
-  progress.classList.add('active');
-  progressFill.classList.remove('complete', 'failed');
-  result.className = 'result-box';
-  result.innerHTML = '';
+// STEP 1: file dropzones
+function setupDropzone(dropId, inputId, chipId, kind) {
+  const drop = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+  const chip = document.getElementById(chipId);
 
-  try {
-    const fd = new FormData(form);
-    const meta = {
-      taxpayer: {
-        inn: fd.get('inn'),
-        fio: fd.get('fio'),
-        oktmo: fd.get('oktmo'),
-        ifns_code: fd.get('ifns_code'),
-      },
-      tax_period_year: parseInt(fd.get('tax_period_year')),
-      contributions: {
-        q1: fd.get('c_q1'),
-        half_year: fd.get('c_half_year'),
-        nine_months: fd.get('c_nine_months'),
-        year: fd.get('c_year'),
-      },
-      personnel: {
-        has_employees: fd.get('has_employees') === 'on',
-      },
-      stamps: {
-        enabled: fd.get('stamps_enabled') === 'on',
-        operator: fd.get('operator'),
-      },
-    };
-
-    const payload = new FormData();
-    payload.append('meta', JSON.stringify(meta));
-    payload.append('statement', fd.get('statement'));
-    if (fd.get('ofd') && fd.get('ofd').size > 0) {
-      payload.append('ofd', fd.get('ofd'));
-    }
-
-    const resp = await fetch('/api/complete/create-declaration', {
-      method: 'POST',
-      body: payload,
-    });
-
-    if (!resp.ok) {
-      const errBody = await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${errBody}`);
-    }
-
-    const { job_id, status_url, result_url } = await resp.json();
-
-    // Poll
-    let finalState = null;
-    for (let i = 0; i < 300; i++) {
-      await sleep(1000);
-      const r = await fetch(status_url);
-      const state = await r.json();
-      progressFill.style.width = state.progress_pct + '%';
-      progressText.textContent = state.progress_pct + '%';
-      stageText.textContent = STAGE_LABELS[state.stage] || state.stage;
-      if (state.status === 'complete' || state.status === 'failed') {
-        finalState = state;
-        break;
-      }
-    }
-
-    if (!finalState) throw new Error('Таймаут: задача не завершилась за 5 минут');
-
-    if (finalState.status === 'failed') {
-      progressFill.classList.add('failed');
-      result.className = 'result-box error';
-      result.innerHTML = `<strong>Ошибка (${finalState.error.code}):</strong> ${finalState.error.message}<br><small>Стадия: ${finalState.error.stage}</small>`;
+  function setFile(f) {
+    state.files[kind] = f;
+    if (f) {
+      chip.innerHTML = `<span class="file-chip">📄 ${f.name} <button class="file-chip-remove" type="button">×</button></span>`;
+      chip.style.display = 'block';
+      chip.querySelector('.file-chip-remove').onclick = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        input.value = ''; setFile(null);
+      };
     } else {
-      progressFill.classList.add('complete');
-      result.className = 'result-box success';
-      result.innerHTML = `<strong>Готово!</strong> <a href="${finalState.result_url}" target="_blank">Скачать PDF</a>`;
+      chip.innerHTML = ''; chip.style.display = 'none';
     }
-  } catch (err) {
-    progressFill.classList.add('failed');
-    result.className = 'result-box error';
-    result.innerHTML = `<strong>Ошибка:</strong> ${err.message}`;
-  } finally {
-    submitBtn.disabled = false;
+    validateStep1();
   }
+
+  input.addEventListener('change', () => setFile(input.files[0] || null));
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('active'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('active'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault();
+    drop.classList.remove('active');
+    const f = e.dataTransfer.files[0];
+    if (f) { input.files = e.dataTransfer.files; setFile(f); }
+  });
+}
+setupDropzone('drop-statement', 'statement-file', 'statement-chip', 'statement');
+setupDropzone('drop-ofd', 'ofd-file', 'ofd-chip', 'ofd');
+
+function validateStep1() {
+  document.getElementById('btn-step1-next').disabled = state.files.statement == null;
+}
+
+document.getElementById('year').addEventListener('change', e => {
+  state.year = Number(e.target.value);
 });
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+// STEP 1 → 2: parse preview
+document.getElementById('btn-step1-next').onclick = async () => {
+  const btn = document.getElementById('btn-step1-next');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Парсим…';
+
+  try {
+    const fd = new FormData();
+    fd.append('statement', state.files.statement);
+    if (state.files.ofd) fd.append('ofd', state.files.ofd);
+    fd.append('year', String(state.year));
+
+    const resp = await fetch('/api/complete/parse-preview', { method: 'POST', body: fd });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`Ошибка парсинга: ${resp.status} ${err.slice(0, 200)}`);
+    }
+    state.parse = await resp.json();
+    state.monthly = state.parse.monthly.map(m => ({
+      month: m.month,
+      cashless: Number(m.cashless),
+      cash: Number(m.cash),
+    }));
+    renderMonthlyTable();
+    renderParseInfo();
+
+    if (state.parse.owner_inn && !state.taxpayer.inn) {
+      state.taxpayer.inn = state.parse.owner_inn;
+    }
+    if (state.parse.owner_name && !state.taxpayer.fio) {
+      state.taxpayer.fio = state.parse.owner_name;
+    }
+
+    goToStep(2);
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Далее: проверить доходы →';
+  }
+};
+
+// STEP 2: monthly table
+const MONTHS_RU = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                   'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+function renderMonthlyTable() {
+  const tbody = document.getElementById('monthly-body');
+  tbody.innerHTML = '';
+  state.monthly.forEach((m, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="month-name">${MONTHS_RU[idx]}</td>
+      <td><input type="number" min="0" step="0.01" data-kind="cashless" data-idx="${idx}" value="${m.cashless}" /></td>
+      <td><input type="number" min="0" step="0.01" data-kind="cash" data-idx="${idx}" value="${m.cash}" /></td>
+      <td class="sum" data-row-total="${idx}" style="text-align:right">${(m.cashless + m.cash).toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbody.addEventListener('input', onMonthlyInput);
+  recomputeTotals();
+}
+
+function onMonthlyInput(e) {
+  const t = e.target;
+  if (t.tagName !== 'INPUT') return;
+  const idx = Number(t.dataset.idx);
+  const kind = t.dataset.kind;
+  const val = Number(t.value) || 0;
+  state.monthly[idx][kind] = val;
+  const row = state.monthly[idx];
+  document.querySelector(`td[data-row-total="${idx}"]`).textContent = (row.cashless + row.cash).toFixed(2);
+  recomputeTotals();
+}
+
+function recomputeTotals() {
+  const totCashless = state.monthly.reduce((s, m) => s + m.cashless, 0);
+  const totCash = state.monthly.reduce((s, m) => s + m.cash, 0);
+  document.getElementById('total-cashless').textContent = totCashless.toFixed(2);
+  document.getElementById('total-cash').textContent = totCash.toFixed(2);
+  document.getElementById('total-all').textContent = (totCashless + totCash).toFixed(2);
+}
+
+function renderParseInfo() {
+  const p = state.parse;
+  const info = document.getElementById('parse-info');
+  let msg = `Распознано операций: <b>${p.operations_total}</b>, из них доходных за ${state.year} г.: <b>${p.income_operations}</b>.`;
+  if (p.owner_inn) msg += ` ИНН из выписки: <b>${p.owner_inn}</b>.`;
+  if (p.period_start && p.period_end) msg += ` Период: ${p.period_start} — ${p.period_end}.`;
+  info.innerHTML = msg;
+  if (p.warnings && p.warnings.length) {
+    info.className = 'info-box warn';
+    info.innerHTML += '<br><br><b>Предупреждения:</b><br>' + p.warnings.map(w => '• ' + w).join('<br>');
+  } else {
+    info.className = 'info-box';
+  }
+}
+
+document.getElementById('btn-step2-back').onclick = () => goToStep(1);
+document.getElementById('btn-step2-next').onclick = () => goToStep(3);
+
+// STEP 3
+document.getElementById('has-employees').addEventListener('change', e => {
+  state.personnel.has_employees = e.target.checked;
+  document.getElementById('employees-details').style.display = e.target.checked ? 'block' : 'none';
+  if (e.target.checked && !state.personnel.employee_start_quarter) {
+    state.personnel.employee_start_quarter = 1;
+  }
+});
+document.getElementById('num-employees').addEventListener('input', e => {
+  state.personnel.num_employees = Number(e.target.value) || 0;
+});
+document.getElementById('avg-salary').addEventListener('input', e => {
+  state.personnel.avg_salary = Number(e.target.value) || 0;
+});
+document.getElementById('employee-start-quarter').addEventListener('input', e => {
+  state.personnel.employee_start_quarter = Number(e.target.value);
+});
+
+const CONTRIB_MAP = { 'contrib-q1': 'q1', 'contrib-h1': 'half_year', 'contrib-9m': 'nine_months', 'contrib-y': 'year' };
+Object.entries(CONTRIB_MAP).forEach(([id, key]) => {
+  document.getElementById(id).addEventListener('input', e => {
+    state.contributions[key] = Number(e.target.value) || 0;
+  });
+});
+
+document.getElementById('btn-step3-back').onclick = () => goToStep(2);
+document.getElementById('btn-step3-next').onclick = () => {
+  document.getElementById('inn').value = state.taxpayer.inn;
+  document.getElementById('fio').value = state.taxpayer.fio;
+  document.getElementById('oktmo').value = state.taxpayer.oktmo;
+  document.getElementById('ifns-code').value = state.taxpayer.ifns_code;
+  goToStep(4);
+};
+
+// STEP 4
+document.getElementById('inn').addEventListener('input', e => { state.taxpayer.inn = e.target.value.trim(); });
+document.getElementById('fio').addEventListener('input', e => { state.taxpayer.fio = e.target.value.trim(); });
+document.getElementById('oktmo').addEventListener('input', e => { state.taxpayer.oktmo = e.target.value.trim(); });
+document.getElementById('ifns-code').addEventListener('input', e => { state.taxpayer.ifns_code = e.target.value.trim(); });
+
+document.querySelectorAll('.radio-opt').forEach(opt => {
+  opt.onclick = () => {
+    document.querySelectorAll('.radio-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    const inp = opt.querySelector('input[type=radio]');
+    inp.checked = true;
+    state.stampVariant = inp.value;
+  };
+});
+
+document.getElementById('btn-step4-back').onclick = () => goToStep(3);
+document.getElementById('btn-step4-next').onclick = async () => {
+  const t = state.taxpayer;
+  if (!/^\d{10}$|^\d{12}$/.test(t.inn)) return alert('ИНН должен быть 10 или 12 цифр');
+  if (!t.fio || t.fio.length < 3) return alert('Введите ФИО');
+  if (!/^\d{8}$|^\d{11}$/.test(t.oktmo)) return alert('ОКТМО должен быть 8 или 11 цифр');
+  if (!/^\d{4}$/.test(t.ifns_code)) return alert('Код ИФНС должен быть 4 цифры');
+  goToStep(5);
+  await runGeneration();
+};
+
+// STEP 5
+async function runGeneration() {
+  setProgress(5, 'Отправка данных…');
+  try {
+    const meta = buildMeta();
+    const fd = new FormData();
+    fd.append('statement', state.files.statement);
+    if (state.files.ofd) fd.append('ofd', state.files.ofd);
+    fd.append('meta', JSON.stringify(meta));
+
+    const resp = await fetch('/api/complete/create-declaration', { method: 'POST', body: fd });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`Ошибка: ${resp.status} ${err.slice(0, 300)}`);
+    }
+    const { job_id, status_url, result_url } = await resp.json();
+    state.jobId = job_id;
+
+    setProgress(15, 'Обработка…');
+    await pollJob(job_id, result_url);
+  } catch (e) {
+    setProgress(0, '');
+    showResult(false, e.message);
+  }
+}
+
+function buildMeta() {
+  const variant = state.stampVariant;
+  const stamps = variant === 'none'
+    ? { enabled: false }
+    : {
+        enabled: true,
+        operator: variant,
+        include_receipts: variant === 'tensor',
+      };
+
+  const personnel = state.personnel.has_employees ? {
+    has_employees: true,
+    num_employees: state.personnel.num_employees,
+    avg_salary: state.personnel.avg_salary,
+    employee_start_quarter: state.personnel.employee_start_quarter,
+  } : { has_employees: false };
+
+  return {
+    taxpayer: {
+      inn: state.taxpayer.inn,
+      fio: state.taxpayer.fio,
+      oktmo: state.taxpayer.oktmo,
+      ifns_code: state.taxpayer.ifns_code,
+    },
+    tax_period_year: state.year,
+    contributions: state.contributions,
+    personnel: personnel,
+    stamps: stamps,
+    monthly_income_override: state.monthly.map(m => ({
+      month: m.month,
+      cashless: m.cashless,
+      cash: m.cash,
+    })),
+  };
+}
+
+const STAGE_LABEL = {
+  initializing: 'Инициализация',
+  parsing_statement: 'Парсинг выписки',
+  parsing_ofd: 'Парсинг ОФД',
+  classifying: 'Классификация операций',
+  calculating_tax: 'Расчёт налога',
+  rendering_declaration: 'Рендер декларации',
+  fetching_ifts: 'Получение данных ИФНС',
+  appending_receipts: 'Формирование квитанций',
+  rendering_stamps: 'Наложение штампов',
+  complete: 'Готово',
+};
+
+async function pollJob(jobId, resultUrl) {
+  while (true) {
+    await new Promise(r => setTimeout(r, 900));
+    const r = await fetch(`/api/jobs/${jobId}`);
+    if (!r.ok) throw new Error(`GET job failed: ${r.status}`);
+    const j = await r.json();
+    const label = STAGE_LABEL[j.stage] || j.stage;
+    setProgress(j.progress_pct, label + '…');
+    if (j.status === 'complete') {
+      setProgress(100, 'Готово ✓');
+      showResult(true, null, resultUrl);
+      return;
+    }
+    if (j.status === 'failed') {
+      const err = j.error ? `${j.error.code}: ${j.error.message}` : 'Неизвестная ошибка';
+      throw new Error(err);
+    }
+  }
+}
+
+function setProgress(pct, label) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = label;
+}
+
+function showResult(ok, errMsg, resultUrl) {
+  const box = document.getElementById('generation-result');
+  box.style.display = 'block';
+  if (ok) {
+    box.innerHTML = `
+      <div style="text-align:center; padding:10px 0">
+        <p style="font-size:15px; margin:0 0 16px">Декларация успешно сформирована</p>
+        <a href="${resultUrl}" class="download-big" download>⬇ Скачать PDF</a>
+      </div>`;
+  } else {
+    box.innerHTML = `<div class="info-box danger"><b>Ошибка генерации:</b><br>${errMsg}</div>`;
+  }
+  document.getElementById('btn-step5-restart').style.display = 'inline-flex';
+}
+
+document.getElementById('btn-step5-restart').onclick = () => location.reload();
+
+validateStep1();
 </script>
 </body>
 </html>
