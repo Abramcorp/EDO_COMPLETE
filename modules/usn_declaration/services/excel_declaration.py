@@ -11,7 +11,7 @@ from openpyxl.styles import Alignment, Font
 from pathlib import Path
 import shutil
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / 'data'
+DATA_DIR = Path(__file__).resolve().parent.parent / 'data'  # EDO_COMPLETE: depth -1 vs upstream
 
 TEMPLATES = {
     2024: DATA_DIR / 'declaration_template_2024.xlsx',
