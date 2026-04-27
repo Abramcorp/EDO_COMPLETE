@@ -175,10 +175,14 @@ async def run_pipeline(
     # -------- 5. Рендер PDF декларации (reportlab Canvas + таблицы клеточек) --------
     # С PR #21 перешли с overlay-over-raster на table_renderer — теперь декларация
     # рисуется с нуля через ReportLab, без подложки ФНС. Это устранило проблемы
-    # наложения наших значений на предзаполненные цифры эталона.
+    # -------- 5. Рендер PDF декларации (xlsx-шаблон ФНС + LibreOffice) --------
+    # Переход с ReportLab Table (pr24) на xlsx → PDF через LibreOffice.
+    # Заполняем шаблон templates/knd_1152017/declaration_template_2024.xlsx
+    # через openpyxl + структурно модифицируем Титул (сжимаем пустые
+    # строки для освобождения зоны под штамп ЭДО), затем `soffice --convert-to pdf`.
     await tracker.emit(PipelineStage.RENDERING_DECLARATION)
     try:
-        from modules.table_renderer import render_declaration_pdf
+        from modules.xlsx_renderer import render_declaration_pdf
         signing_dt_for_decl = _resolve_signing_datetime(req.stamps.signing_datetime_override)
         declaration_pdf: bytes = render_declaration_pdf(
             taxpayer=req.taxpayer,
