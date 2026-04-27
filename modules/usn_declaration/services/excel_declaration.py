@@ -517,9 +517,11 @@ def _fill_old(template_path, out_path, project_data, decl_data):
     write_chars(ws, 39, ['C','D','E'], '004')
     _write_char(ws, 'B44', '1')
     dd, mm, yyyy = _parse_date(decl_data.get('date_presented', '27.01.2025'))
-    write_chars(ws, 54, ['AE','AF'], dd)
-    write_chars(ws, 54, ['AH','AI'], mm)
-    write_chars(ws, 54, ['AK','AL','AM','AN'], yyyy)
+    # pr30 fix: дата подписи — в зону НАЛОГОПЛАТЕЛЬЩИКА (row 52, cols K..T),
+    # а не в зону ИФНС 'Дата представления декларации' (row 54, cols AE..AN).
+    write_chars(ws, 52, ['K','L'], dd)
+    write_chars(ws, 52, ['N','O'], mm)
+    write_chars(ws, 52, ['Q','R','S','T'], yyyy)
 
     # ---- Р.1.1 ----
     ws = wb['Р.1.1']
