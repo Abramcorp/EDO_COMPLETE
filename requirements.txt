@@ -19,6 +19,11 @@ pdfplumber>=0.10.0          # извлечение текста+координа
 pypdfium2>=4.0.0            # растеризация PDF→PNG (pixel-diff визуальный уровень)
 Pillow>=10.0.0              # сравнение PNG
 
+# ===== page_normalizer: детекция fiducial-меток для нормализации декларации =====
+# pypdf и Pillow уже выше; pdftoppm — системный, в Dockerfile (poppler-utils).
+scipy>=1.11.0               # ndimage.label для детектора чёрных меток
+numpy>=1.24.0               # массивы изображений; транзитивно от scipy, держим явно
+
 # ===== Excel / data =====
 openpyxl>=3.1.5             # парсинг ОФД + извлечение координат из XLSX-шаблона
 xlrd>=2.0.1                 # legacy xls

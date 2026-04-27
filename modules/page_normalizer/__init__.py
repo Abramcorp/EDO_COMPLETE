@@ -15,10 +15,11 @@
 """
 from .constants import ETALON_MARKS_150DPI
 from .detector import find_corner_marks
-from .normalizer import normalize_declaration_pdf
+from .normalizer import normalize_declaration_pdf, normalize_declaration_pdf_bytes
 
 __all__ = [
     "ETALON_MARKS_150DPI",
     "find_corner_marks",
     "normalize_declaration_pdf",
+    "normalize_declaration_pdf_bytes",
 ]
