@@ -194,6 +194,17 @@ async def run_pipeline(
     except Exception as e:
         raise DeclarationRenderError(f"Ошибка рендера декларации: {e}", cause=e) from e
 
+    # -------- Нормализация: чёрные fiducial-метки в эталонную позицию --------
+    # Подгоняет позиции 4 чёрных квадратных меток в углах страниц 1-4 декларации
+    # под эталон (Романов УСН 2025). Без этого штамп ЭДО на фиксированных
+    # координатах накладывается поверх контента декларации (см. modules/page_normalizer).
+    await tracker.emit(PipelineStage.NORMALIZING_DECLARATION)
+    try:
+        from modules.page_normalizer import normalize_declaration_pdf_bytes
+        declaration_pdf = normalize_declaration_pdf_bytes(declaration_pdf)
+    except Exception as e:
+        raise DeclarationRenderError(f"Ошибка нормализации декларации: {e}", cause=e) from e
+
     # -------- Без штампов — отдаём 4-страничный PDF --------
     if not req.stamps.enabled:
         return declaration_pdf, f"declaration_{req.taxpayer.inn}_{req.tax_period_year}.pdf"
