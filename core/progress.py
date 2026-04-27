@@ -27,7 +27,6 @@ STAGE_PROGRESS: dict[PipelineStage, int] = {
     PipelineStage.CLASSIFYING: 25,
     PipelineStage.CALCULATING_TAX: 40,
     PipelineStage.RENDERING_DECLARATION: 60,
-    PipelineStage.NORMALIZING_DECLARATION: 70,
     PipelineStage.FETCHING_IFTS: 75,
     PipelineStage.APPENDING_RECEIPTS: 85,
     PipelineStage.RENDERING_STAMPS: 95,

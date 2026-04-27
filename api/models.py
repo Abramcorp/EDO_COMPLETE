@@ -43,7 +43,6 @@ class PipelineStage(str, Enum):
     CLASSIFYING = "classifying"
     CALCULATING_TAX = "calculating_tax"
     RENDERING_DECLARATION = "rendering_declaration"
-    NORMALIZING_DECLARATION = "normalizing_declaration"
     FETCHING_IFTS = "fetching_ifts"
     APPENDING_RECEIPTS = "appending_receipts"
     RENDERING_STAMPS = "rendering_stamps"
