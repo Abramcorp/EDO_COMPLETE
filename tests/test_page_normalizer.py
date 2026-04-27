@@ -16,6 +16,7 @@ from modules.page_normalizer import (  # noqa: E402
     ETALON_MARKS_150DPI,
     find_corner_marks,
     normalize_declaration_pdf,
+    normalize_declaration_pdf_bytes,
 )
 from modules.page_normalizer.normalizer import _compute_page_transform  # noqa: E402
 
@@ -182,3 +183,68 @@ class TestNormalizeIntegration:
                 dx, dy = detected[tag][0] - ex, detected[tag][1] - ey
                 assert abs(dx) <= 5, f"стр.{p}/{tag}: Δx={dx} > 5"
                 assert abs(dy) <= 5, f"стр.{p}/{tag}: Δy={dy} > 5"
+
+
+# ---------------------------------------------------------------------------
+# normalize_declaration_pdf_bytes — обёртка для in-memory pipeline
+# ---------------------------------------------------------------------------
+
+@pytest.mark.skipif(
+    not (HAS_SOFFICE and HAS_PDFTOPPM and DECLARATION_TEMPLATE.exists()),
+    reason="Требует LibreOffice + poppler-utils + declaration_template_2024.xlsx",
+)
+class TestNormalizeBytes:
+    @pytest.fixture
+    def declaration_pdf_bytes(self, tmp_path) -> bytes:
+        """Сгенерировать PDF из xlsx-шаблона декларации и вернуть как bytes."""
+        subprocess.run(
+            ["soffice", "--headless", "--convert-to", "pdf",
+             "--outdir", str(tmp_path), str(DECLARATION_TEMPLATE)],
+            capture_output=True, timeout=60, check=True,
+        )
+        pdf = next(tmp_path.glob("*.pdf"))
+        return pdf.read_bytes()
+
+    def test_input_output_are_bytes(self, declaration_pdf_bytes):
+        result = normalize_declaration_pdf_bytes(declaration_pdf_bytes)
+        assert isinstance(result, bytes)
+        assert result.startswith(b"%PDF-")
+
+    def test_page_count_preserved(self, declaration_pdf_bytes):
+        from pypdf import PdfReader
+        from io import BytesIO
+
+        original_pages = len(PdfReader(BytesIO(declaration_pdf_bytes)).pages)
+        result = normalize_declaration_pdf_bytes(declaration_pdf_bytes)
+        normalized_pages = len(PdfReader(BytesIO(result)).pages)
+        assert normalized_pages == original_pages
+
+    def test_marks_align_after_bytes_normalization(self, declaration_pdf_bytes, tmp_path):
+        """Семантика идентична Path-версии: метки на эталонной позиции."""
+        result_bytes = normalize_declaration_pdf_bytes(declaration_pdf_bytes)
+        result_pdf = tmp_path / "result.pdf"
+        result_pdf.write_bytes(result_bytes)
+
+        out_dir = tmp_path / "after"
+        out_dir.mkdir()
+        subprocess.run(
+            ["pdftoppm", "-r", "150", str(result_pdf), str(out_dir / "p"), "-png"],
+            capture_output=True, timeout=60, check=True,
+        )
+
+        for p in range(1, 5):
+            png = list(out_dir.glob(f"p-{p:02d}.png")) or list(out_dir.glob(f"p-{p}.png"))
+            assert png
+            detected, _ = find_corner_marks(png[0])
+            for tag, (ex, ey) in ETALON_MARKS_150DPI[p].items():
+                assert tag in detected
+                assert abs(detected[tag][0] - ex) <= 5
+                assert abs(detected[tag][1] - ey) <= 5
+
+    def test_pages_to_normalize_only_subset(self, declaration_pdf_bytes):
+        """Если задать pages_to_normalize=[1], стр.2-4 копируются без transform."""
+        result = normalize_declaration_pdf_bytes(
+            declaration_pdf_bytes, pages_to_normalize=[1]
+        )
+        assert isinstance(result, bytes)
+        assert result.startswith(b"%PDF-")

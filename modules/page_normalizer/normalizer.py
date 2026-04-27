@@ -214,3 +214,44 @@ def normalize_declaration_pdf(
     finally:
         if cleanup_work_dir:
             shutil.rmtree(work_dir, ignore_errors=True)
+
+
+def normalize_declaration_pdf_bytes(
+    input_pdf_bytes: bytes,
+    *,
+    pages_to_normalize: Optional[List[int]] = None,
+    dpi: int = ETALON_DPI,
+) -> bytes:
+    """In-memory обёртка над :func:`normalize_declaration_pdf` для pipeline.
+
+    Принимает PDF как байты, возвращает нормализованный PDF как байты.
+    Внутри использует временный каталог для растеризации страниц через pdftoppm
+    (избежать его на этом этапе нельзя — pypdf не умеет растеризировать).
+
+    Args:
+        input_pdf_bytes: исходный PDF-документ.
+        pages_to_normalize: список 1-based номеров страниц (по умолчанию [1,2,3,4]).
+        dpi: DPI растеризации для детекции (по умолчанию 150).
+
+    Returns:
+        Нормализованный PDF-документ.
+
+    Behaviour:
+        Семантика идентична :func:`normalize_declaration_pdf` — страницы без
+        найденных меток или вне ``pages_to_normalize`` копируются как есть.
+    """
+    work_dir = Path(tempfile.mkdtemp(prefix="page_normalizer_bytes_"))
+    try:
+        input_path = work_dir / "input.pdf"
+        output_path = work_dir / "output.pdf"
+        input_path.write_bytes(input_pdf_bytes)
+        normalize_declaration_pdf(
+            input_pdf=input_path,
+            output_pdf=output_path,
+            pages_to_normalize=pages_to_normalize,
+            work_dir=work_dir / "raster",
+            dpi=dpi,
+        )
+        return output_path.read_bytes()
+    finally:
+        shutil.rmtree(work_dir, ignore_errors=True)
