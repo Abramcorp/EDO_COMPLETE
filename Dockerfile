@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         fonts-dejavu-core \
         libreoffice-core \
         libreoffice-calc \
+        poppler-utils \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
