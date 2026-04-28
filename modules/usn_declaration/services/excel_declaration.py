@@ -195,9 +195,13 @@ def _fill_form_5_08(template_path, out_path, project_data, decl_data):
     write_chars(ws, 4, _OLD_STR_COLS, '002')
     sec11 = decl_data.get('section_1_1', {})
     oktmo = str(project_data.get('oktmo', '')).ljust(11, '-')[:11]
-    for key in ('oktmo_010','oktmo_030','oktmo_060','oktmo_090'):
+    # ОКТМО: 010 — обязательно; 030/060/090 — только при смене места учёта (иначе прочерки).
+    # По умолчанию места учёта НЕ менялось — пишем прочерки.
+    row, cols = _OLD_R11['oktmo_010']
+    write_chars(ws, row, cols, oktmo)
+    for key in ('oktmo_030','oktmo_060','oktmo_090'):
         row, cols = _OLD_R11[key]
-        write_chars(ws, row, cols, oktmo)
+        write_chars(ws, row, cols, '-' * len(cols))
     for key in ('line_020','line_040','line_050','line_070','line_080',
                 'line_100','line_101','line_110'):
         row, cols = _OLD_R11[key]
@@ -295,9 +299,13 @@ def _fill_form_5_09(template_path, out_path, project_data, decl_data):
     write_chars(ws, 4, _OLD_STR_COLS, '002')
     sec11 = decl_data.get('section_1_1', {})
     oktmo = str(project_data.get('oktmo', '')).ljust(11, '-')[:11]
-    for key in ('oktmo_010','oktmo_030','oktmo_060','oktmo_090'):
+    # ОКТМО: 010 — обязательно; 030/060/090 — только при смене места учёта (иначе прочерки).
+    # По умолчанию места учёта НЕ менялось — пишем прочерки.
+    row, cols = _OLD_R11['oktmo_010']
+    write_chars(ws, row, cols, oktmo)
+    for key in ('oktmo_030','oktmo_060','oktmo_090'):
         row, cols = _OLD_R11[key]
-        write_chars(ws, row, cols, oktmo)
+        write_chars(ws, row, cols, '-' * len(cols))
     for key in ('line_020','line_040','line_050','line_070','line_080',
                 'line_100','line_101','line_110'):
         row, cols = _OLD_R11[key]
@@ -393,9 +401,13 @@ def _fill_old(template_path, out_path, project_data, decl_data):
     write_chars(ws, 4, _OLD_STR_COLS, '002')
     sec11 = decl_data.get('section_1_1', {})
     oktmo = str(project_data.get('oktmo', '')).ljust(11, '-')[:11]
-    for key in ('oktmo_010','oktmo_030','oktmo_060','oktmo_090'):
+    # ОКТМО: 010 — обязательно; 030/060/090 — только при смене места учёта (иначе прочерки).
+    # По умолчанию места учёта НЕ менялось — пишем прочерки.
+    row, cols = _OLD_R11['oktmo_010']
+    write_chars(ws, row, cols, oktmo)
+    for key in ('oktmo_030','oktmo_060','oktmo_090'):
         row, cols = _OLD_R11[key]
-        write_chars(ws, row, cols, oktmo)
+        write_chars(ws, row, cols, '-' * len(cols))
     for key in ('line_020','line_040','line_050','line_070','line_080',
                 'line_100','line_101','line_110'):
         row, cols = _OLD_R11[key]

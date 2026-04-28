@@ -34,13 +34,33 @@ def _to_int(v: Any) -> int:
     return int(Decimal(str(v)))
 
 
+def _strip_role_prefix(fio: str) -> str:
+    """Очистить ФИО от префикса роли ("Индивидуальный предприниматель", "ИП", и т.п.).
+    На вход приходит, например, "Индивидуальный предприниматель Дошукаева Лола Магомедовна",
+    на выход — только "Дошукаева Лола Магомедовна".
+    По правилу заполнения декларации (Приказ ФНС 26.11.2025): для ИП в поле
+    "налогоплательщик" указывается ПОСТРОЧНО Фамилия, Имя, Отчество — без роли.
+    """
+    s = (fio or "").strip()
+    for prefix in (
+        "Индивидуальный предприниматель",
+        "индивидуальный предприниматель",
+        "ИП ",
+        "ип ",
+    ):
+        if s.startswith(prefix):
+            s = s[len(prefix):].strip()
+            break
+    return s
+
+
 def _build_project_data(taxpayer, tax_period_year: int) -> dict[str, Any]:
     return {
         "inn": taxpayer.inn,
         "tax_period_year": tax_period_year,
         "ifns_code": taxpayer.ifns_code,
         "oktmo": taxpayer.oktmo,
-        "fio": taxpayer.fio,
+        "fio": _strip_role_prefix(taxpayer.fio or ""),
         "phone": "",
         "kpp": "",
     }
@@ -55,7 +75,8 @@ def _build_decl_data_2024(*, tax_result, signing_date: datetime, correction_numb
     # (см. комментарий "old key was line_101"). Это признак налогоплательщика 1/2.
     # У tax_engine это в line_102. Переносим.
     s211 = {
-        "line_101": str(src211.get("line_102", 2)),
+        "line_102_pr": str(src211.get("line_102", 2)),
+        "line_101_pr": "1",  # признак ставки 6% (для формы 5.08)
         "line_110": _to_int(src211.get("line_110", 0)),
         "line_111": _to_int(src211.get("line_111", 0)),
         "line_112": _to_int(src211.get("line_112", 0)),
@@ -181,7 +202,7 @@ def render_declaration_pdf_via_usn(
             tax_result=tax_result, signing_date=signing_date, correction_number=correction_number,
         )
     elif "template_2025" in name:
-        decl_data = _build_decl_data_2025(
+        decl_data = _build_decl_data_2024(
             tax_result=tax_result, signing_date=signing_date, correction_number=correction_number,
         )
     else:
