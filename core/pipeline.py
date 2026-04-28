@@ -177,14 +177,14 @@ async def run_pipeline(
     # рисуется с нуля через ReportLab, без подложки ФНС. Это устранило проблемы
     # -------- 5. Рендер PDF декларации (xlsx-шаблон ФНС + LibreOffice) --------
     # Переход с ReportLab Table (pr24) на xlsx → PDF через LibreOffice.
-    # Заполняем шаблон templates/knd_1152017/declaration_template_2024.xlsx
-    # через openpyxl + структурно модифицируем Титул (сжимаем пустые
-    # строки для освобождения зоны под штамп ЭДО), затем `soffice --convert-to pdf`.
+    # Заполняем шаблон templates/knd_1152017/declaration_template_*.xlsx через
+    # fill_declaration (modules/usn_declaration), затем soffice -> PDF.
+    # В шаблонах зарезервированы 84pt снизу под штамп ЭДО (см. tools/add_stamp_padding.py).
     await tracker.emit(PipelineStage.RENDERING_DECLARATION)
     try:
-        from modules.xlsx_renderer import render_declaration_pdf
+        from modules.usn_declaration_adapter import render_declaration_pdf_via_usn
         signing_dt_for_decl = _resolve_signing_datetime(req.stamps.signing_datetime_override)
-        declaration_pdf: bytes = render_declaration_pdf(
+        declaration_pdf: bytes = render_declaration_pdf_via_usn(
             taxpayer=req.taxpayer,
             tax_period_year=req.tax_period_year,
             tax_result=tax_result,
@@ -194,16 +194,10 @@ async def run_pipeline(
     except Exception as e:
         raise DeclarationRenderError(f"Ошибка рендера декларации: {e}", cause=e) from e
 
-    # -------- Нормализация: чёрные fiducial-метки в эталонную позицию --------
-    # Подгоняет позиции 4 чёрных квадратных меток в углах страниц 1-4 декларации
-    # под эталон (Романов УСН 2025). Без этого штамп ЭДО на фиксированных
-    # координатах накладывается поверх контента декларации (см. modules/page_normalizer).
+    # NORMALIZING_DECLARATION больше не нужна: место под штамп зарезервировано
+    # в самом шаблоне через padding снизу (84pt = 9+75pt по образцу Тензора).
+    # Стадия emit-ится для совместимости со старыми клиентами frontend.
     await tracker.emit(PipelineStage.NORMALIZING_DECLARATION)
-    try:
-        from modules.page_normalizer import normalize_declaration_pdf_bytes
-        declaration_pdf = normalize_declaration_pdf_bytes(declaration_pdf)
-    except Exception as e:
-        raise DeclarationRenderError(f"Ошибка нормализации декларации: {e}", cause=e) from e
 
     # -------- Без штампов — отдаём 4-страничный PDF --------
     if not req.stamps.enabled:
