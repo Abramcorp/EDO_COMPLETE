@@ -1100,6 +1100,12 @@ document.getElementById('btn-autofill').onclick = async () => {
     document.getElementById('receipt-reg-number').value = data.registration_number || '';
     document.getElementById('receipt-file-name').value = data.file_name || '';
     document.getElementById('receipt-submission-date').value = data.submission_datetime || '';
+    // Sync signing-date from submission_datetime (date-part only)
+    if (data.submission_datetime) {
+      const datePart = data.submission_datetime.length >= 10 ? data.submission_datetime.substring(0, 10) : data.submission_datetime;
+      document.getElementById('signing-date').value = datePart;
+      state.signingDate = datePart;
+    }
     document.getElementById('receipt-acceptance-date').value = data.acceptance_datetime || '';
     state.receiptParams = {
       document_uuid: data.document_uuid || '',
@@ -1140,6 +1146,16 @@ document.getElementById('btn-autofill').onclick = async () => {
             : k === 'manager-post' ? 'manager_post'
             : k;
   el.addEventListener('input', e => { state.iftsPreview[key] = e.target.value.trim(); });
+});
+
+// Sync: при изменении даты отправки в ФНС поле "Дата подписания" автоматически обновляется
+// (берётся дата-часть YYYY-MM-DD из ISO datetime).
+document.getElementById('receipt-submission-date').addEventListener('input', e => {
+  const v = e.target.value.trim();
+  const datePart = v.length >= 10 ? v.substring(0, 10) : v;
+  const signingEl = document.getElementById('signing-date');
+  if (signingEl) signingEl.value = datePart;
+  state.signingDate = datePart;
 });
 
 // Синхронизация inputs → state (Receipt params)
