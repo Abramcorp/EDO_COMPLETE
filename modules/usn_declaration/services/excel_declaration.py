@@ -174,15 +174,20 @@ def _fill_form_5_08(template_path, out_path, project_data, decl_data):
     write_chars(ws, 10, ['AK','AL','AM','AN'], str(project_data.get('tax_period_year', 2024)))
     write_chars(ws, 12, ['N','O','P','Q'], str(project_data.get('ifns_code', '')).zfill(4))
     write_chars(ws, 12, ['AL','AM','AN'], '120')
-    fio_parts = project_data.get('fio', '').strip().split()
+    # ФИО для ИП — всё в одну строку (row 14): "ФАМИЛИЯ ИМЯ ОТЧЕСТВО".
+    # Строки 16, 18, 20 заполняются прочерками (по образцу эталона Тензора).
+    fio = project_data.get('fio', '').strip()
     fio_cols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
                 'U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN']
-    for i, row in enumerate([14, 16, 18, 20]):
-        val = fio_parts[i] if i < len(fio_parts) else ''
-        if val:
-            write_chars(ws, row, fio_cols, val)
+    if fio:
+        write_chars(ws, 14, fio_cols, fio)
+    # Прочерки в незаполненных строках поля "налогоплательщик"
+    for row in (16, 18, 20):
+        write_chars(ws, row, fio_cols, '-' * len(fio_cols))
     _write_char(ws, 'I28', '1')
-    write_chars(ws, 39, ['C','D','E'], '004')
+    # "На N страницах" — число страниц декларации (4 для УСН Доходы),
+    # прочерки в незаполненных знакоместах (по эталону Тензора).
+    write_chars(ws, 39, ['C','D','E'], '4', pad_char='-')
     _write_char(ws, 'B44', '1')
     dd, mm, yyyy = _parse_date(decl_data.get('date_presented', '27.01.2025'))
     write_chars(ws, 52, ['K','L'], dd)
@@ -278,15 +283,20 @@ def _fill_form_5_09(template_path, out_path, project_data, decl_data):
     write_chars(ws, 10, ['AK','AL','AM','AN'], str(project_data.get('tax_period_year', 2025)))
     write_chars(ws, 12, ['N','O','P','Q'], str(project_data.get('ifns_code', '')).zfill(4))
     write_chars(ws, 12, ['AL','AM','AN'], '120')
-    fio_parts = project_data.get('fio', '').strip().split()
+    # ФИО для ИП — всё в одну строку (row 14): "ФАМИЛИЯ ИМЯ ОТЧЕСТВО".
+    # Строки 16, 18, 20 заполняются прочерками (по образцу эталона Тензора).
+    fio = project_data.get('fio', '').strip()
     fio_cols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
                 'U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN']
-    for i, row in enumerate([14, 16, 18, 20]):
-        val = fio_parts[i] if i < len(fio_parts) else ''
-        if val:
-            write_chars(ws, row, fio_cols, val)
+    if fio:
+        write_chars(ws, 14, fio_cols, fio)
+    # Прочерки в незаполненных строках поля "налогоплательщик"
+    for row in (16, 18, 20):
+        write_chars(ws, row, fio_cols, '-' * len(fio_cols))
     _write_char(ws, 'I28', '1')
-    write_chars(ws, 39, ['C','D','E'], '004')
+    # "На N страницах" — число страниц декларации (4 для УСН Доходы),
+    # прочерки в незаполненных знакоместах (по эталону Тензора).
+    write_chars(ws, 39, ['C','D','E'], '4', pad_char='-')
     _write_char(ws, 'B44', '1')
     dd, mm, yyyy = _parse_date(decl_data.get('date_presented', '27.04.2026'))
     write_chars(ws, 52, ['K','L'], dd)
@@ -378,15 +388,20 @@ def _fill_old(template_path, out_path, project_data, decl_data):
     write_chars(ws, 10, ['AK','AL','AM','AN'], str(project_data.get('tax_period_year', 2024)))
     write_chars(ws, 12, ['N','O','P','Q'], str(project_data.get('ifns_code', '')).zfill(4))
     write_chars(ws, 12, ['AL','AM','AN'], '120')
-    fio_parts = project_data.get('fio', '').strip().split()
+    # ФИО для ИП — всё в одну строку (row 14): "ФАМИЛИЯ ИМЯ ОТЧЕСТВО".
+    # Строки 16, 18, 20 заполняются прочерками (по образцу эталона Тензора).
+    fio = project_data.get('fio', '').strip()
     fio_cols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
                 'U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN']
-    for i, row in enumerate([14, 16, 18, 20]):
-        val = fio_parts[i] if i < len(fio_parts) else ''
-        if val:
-            write_chars(ws, row, fio_cols, val)
+    if fio:
+        write_chars(ws, 14, fio_cols, fio)
+    # Прочерки в незаполненных строках поля "налогоплательщик"
+    for row in (16, 18, 20):
+        write_chars(ws, row, fio_cols, '-' * len(fio_cols))
     _write_char(ws, 'I28', '1')
-    write_chars(ws, 39, ['C','D','E'], '004')
+    # "На N страницах" — число страниц декларации (4 для УСН Доходы),
+    # прочерки в незаполненных знакоместах (по эталону Тензора).
+    write_chars(ws, 39, ['C','D','E'], '4', pad_char='-')
     _write_char(ws, 'B44', '1')
     dd, mm, yyyy = _parse_date(decl_data.get('date_presented', '27.01.2025'))
     # pr30 fix: дата подписи — в зону НАЛОГОПЛАТЕЛЬЩИКА (row 52, cols K..T),
