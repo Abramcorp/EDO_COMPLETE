@@ -175,8 +175,9 @@ def _fill_form_5_08(template_path, out_path, project_data, decl_data):
     write_chars(ws, 12, ['N','O','P','Q'], str(project_data.get('ifns_code', '')).zfill(4))
     write_chars(ws, 12, ['AL','AM','AN'], '120')
     # ФИО для ИП — всё в одну строку (row 14): "ФАМИЛИЯ ИМЯ ОТЧЕСТВО".
+    # ВАЖНО: всегда UPPERCASE по требованию ФНС.
     # Строки 16, 18, 20 заполняются прочерками (по образцу эталона Тензора).
-    fio = project_data.get('fio', '').strip()
+    fio = project_data.get('fio', '').strip().upper()
     fio_cols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
                 'U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN']
     if fio:
@@ -284,8 +285,9 @@ def _fill_form_5_09(template_path, out_path, project_data, decl_data):
     write_chars(ws, 12, ['N','O','P','Q'], str(project_data.get('ifns_code', '')).zfill(4))
     write_chars(ws, 12, ['AL','AM','AN'], '120')
     # ФИО для ИП — всё в одну строку (row 14): "ФАМИЛИЯ ИМЯ ОТЧЕСТВО".
+    # ВАЖНО: всегда UPPERCASE по требованию ФНС.
     # Строки 16, 18, 20 заполняются прочерками (по образцу эталона Тензора).
-    fio = project_data.get('fio', '').strip()
+    fio = project_data.get('fio', '').strip().upper()
     fio_cols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
                 'U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN']
     if fio:
@@ -389,8 +391,9 @@ def _fill_old(template_path, out_path, project_data, decl_data):
     write_chars(ws, 12, ['N','O','P','Q'], str(project_data.get('ifns_code', '')).zfill(4))
     write_chars(ws, 12, ['AL','AM','AN'], '120')
     # ФИО для ИП — всё в одну строку (row 14): "ФАМИЛИЯ ИМЯ ОТЧЕСТВО".
+    # ВАЖНО: всегда UPPERCASE по требованию ФНС.
     # Строки 16, 18, 20 заполняются прочерками (по образцу эталона Тензора).
-    fio = project_data.get('fio', '').strip()
+    fio = project_data.get('fio', '').strip().upper()
     fio_cols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
                 'U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN']
     if fio:
@@ -483,6 +486,43 @@ def get_template_for_year(year: int) -> Path:
     if year in TEMPLATES and TEMPLATES[year].exists():
         return TEMPLATES[year]
     return TEMPLATE_XLSX
+
+
+# === Pruning: удаление неиспользуемых листов перед PDF ===
+# Для УСН Доходы (объект налогообложения = 1) используются только:
+#   "Титульный лист", "Р.1.1", "Р.2.1.1", "Р.2.1.1 (продол.)"
+# Опционально (если есть данные): "Р.2.1.2", "Р.2.1.2 (продол.)" (торговый сбор),
+#   "Р.3" (целевые средства), "Р.4" (страховые взносы за патент).
+# Все остальные листы (Р.1.2, Р.2.2, Р.2.2 продол.) используются ТОЛЬКО для УСН Доходы-Расходы.
+USED_SHEETS_USN_DOHODY = {
+    'Титульный лист',
+    'Р.1.1',
+    'Р.2.1.1',
+    'Р.2.1.1 (продол.)',
+}
+USED_SHEETS_USN_DOHODY_RASHODY = {
+    'Титульный лист',
+    'Р.1.2',
+    'Р.2.2',
+    'Р.2.2 (продол.)',
+}
+
+
+def prune_unused_sheets(wb, object_code: str = '1') -> None:
+    """Удаляет листы не используемые для конкретного объекта налогообложения УСН.
+
+    object_code: '1' = доходы, '2' = доходы-расходы.
+    Листы оставляем минимально-необходимые. Опциональные (торговый сбор, патент,
+    целевые средства) добавляются позже когда будет нужно.
+    """
+    if object_code == '2':
+        keep = USED_SHEETS_USN_DOHODY_RASHODY
+    else:
+        keep = USED_SHEETS_USN_DOHODY
+
+    to_remove = [name for name in wb.sheetnames if name not in keep]
+    for name in to_remove:
+        del wb[name]
 
 
 def fill_declaration(template_path: Path, out_path: Path,
