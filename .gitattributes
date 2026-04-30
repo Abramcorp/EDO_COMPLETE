@@ -1,0 +1,18 @@
+# Binary file types — git не должен diff/merge их как text
+*.pdf  binary
+*.ttf  binary
+*.otf  binary
+*.xlsx binary
+*.xls  binary
+*.docx binary
+*.doc  binary
+*.pptx binary
+*.ppt  binary
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.gif  binary
+*.zip  binary
+*.gz   binary
+*.tar  binary
+*.bundle binary

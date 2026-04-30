@@ -1,6 +1,6 @@
 {
   "form_version": "1152017",
-  "form_year": 2025,
+  "form_year": 2024,
   "form_revision": "5.08",
   "source": "Координаты извлечены из reference_tensor_6pages.pdf pages 0-3 через pdfplumber chars API, затем размечены по логическим именам. Разметка ведётся постранично: PR #11 = стр. 1 (Титульный лист).",
   "page_size_pt": [
@@ -201,7 +201,7 @@
           ],
           "align": "left",
           "font_size": 10.0,
-          "sample_value": "2025",
+          "sample_value": "2024",
           "_description": "Отчётный год (4 цифры)."
         },
         "ifns_code": {
