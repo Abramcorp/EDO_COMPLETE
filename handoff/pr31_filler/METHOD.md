@@ -279,8 +279,74 @@ print(f"Различий: {diff_pixels} из {diff.size}")
 
 ## Связанные артефакты
 
-- `handoff/pr31_filler/artifacts/page1_text_sequences.json` — карта sequences
-- `handoff/pr31_filler/artifacts/font_subset_data.json` — unicode→GID для /FX
-- `handoff/pr31_filler/artifacts/blank_with_FX.pdf` — blank со встроенным шрифтом
-- `handoff/pr31_filler/artifacts/poc_inn_replaced.pdf` — рабочий пример POC
-- `handoff/pr31_filler/etalons/etalon_romanov_5pages.pdf` — для pixel-perfect сверки
+- `handoff/pr31_filler/artifacts/page1_field_mapping.json` — 32 поля стр.1
+- `handoff/pr31_filler/artifacts/page4_field_mapping.json` — 9 полей стр.4 (включая 150/160/161/162)
+- `handoff/pr31_filler/scripts/build_page_mapping.py` — self-contained сборщик mapping
+- `handoff/pr31_filler/artifacts/poc_inn_pixel_perfect.pdf` — рабочий POC pixel-perfect (0% diff)
+- `handoff/pr31_filler/scripts/poc_fill_inn_pixel_perfect.py` — скрипт POC
+- `handoff/pr31_filler/etalons/etalon_romanov_5pages.pdf` — эталон для pixel-сверки
+- `templates/knd_1152017/blank_2024.pdf` / `blank_2025.pdf` — production шаблоны
+
+---
+
+## ✨ Stage 2 итоги (30.04.2026): новые бланки + полный /C2_0 ArialMT
+
+### Изменения в новой ревизии бланков
+- Стр.1 теперь имеет **8 content streams** (было 1). Streams [0..6] = pixel-graphics
+  (`re f` rectangles), stream [7] = единственный с BT/TJ и 505 `<0010>`-прочерков
+- Стр.4 расширена: добавлены строки **150** (взносы по ст.430 НК),
+  **160/161/162** (1% с дох.>300тыс)
+- /C2_0 на стр.1 теперь **полный встроенный ArialMT**: 1680 глифов, 1425 unicode
+  codepoints, **полная русская кириллица** (включая Б, Ё, Ж, З, Х, Ц, Ш, Щ, Ъ, Ы, Э, Ю)
+
+### Покрытие /C2_0
+**ToUnicode CMap** — 98 codepoints (только то что есть в постоянном тексте формы).
+**Встроенный TTF cmap** (FontFile2) — 1425 codepoints (полное покрытие):
+- Все цифры, латиница, кириллица (заглавная и строчная)
+- Знаки `+ / . - ( ) : , ; № < = > ! "` и т.д.
+- Любые европейские символы
+
+→ **filler v2 рисует абсолютно любой текст через /C2_0 → pixel-perfect**
+
+### Стратегия filler v2 (упрощённая)
+Hybrid font/FX больше не нужен. Для каждого символа:
+1. Найти CID через `char_to_cid` (из ToUnicode CMap) — fast path
+2. Если не в CMap → найти GID через TTF cmap (`unicode → glyph_name → GID`),
+   использовать GID как CID (Identity-H Encoding)
+
+### Замер
+POC ИНН '330573397709' Романова на новом blank → **0/235 222 диф-пикселей** в 600 DPI
+vs эталон Тензора (зона ИНН).
+
+### text matrix (унифицированный для всех символов)
+```
+q
+0.24 0 0 -0.24 0 841.91998 cm
+2.9347825 0 0 2.9347825 58.333332 58.333332 cm
+BT
+/C2_0 12 Tf
+1 0 0 -1 tm_x tm_y Tm
+<{cid_hex}> Tj
+ET
+... (повторить для каждой клетки)
+Q
+```
+
+Координатная формула:
+```
+tm_x = (rl_x_baseline - 14) / 0.7043478
+tm_y = (827.91998 - rl_y_baseline) / 0.7043478
+```
+
+### Откуда (rl_x_baseline, rl_y_baseline)
+Из `page{1,4}_field_mapping.json` (поле `rl_baseline_cells`), сгенерированного
+`build_page_mapping.py` через полный tracking:
+- Text matrix Tm.e/Tm.f после каждой TJ-команды
+- CTM stack: q/Q (push/pop) + cm (matrix concat)
+- Все content streams страницы парсятся последовательно (CTM накапливается)
+
+### Координатная семантика device → text-space
+device = Tm × CTM, где CTM включает все cm-операции от начала /Contents.
+В рабочем q-блоке filler-а (с CTM_2 = `[0.7043, 0, 0, -0.7043, 14, 827.92]`):
+text matrix `1 0 0 -1 tm_x tm_y` даёт device = (rl_x, rl_y), что и есть
+baseline в эталоне.
