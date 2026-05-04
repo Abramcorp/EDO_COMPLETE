@@ -1,0 +1,385 @@
+"""
+PDF Filler v2 для декларации УСН (КНД 1152017).
+
+Заполняет blank PDF (templates/knd_1152017/blank_2024.pdf или blank_2025.pdf)
+данными из user dict, используя предварительно подготовленные field mappings.
+
+Метод (см. handoff/pr31_filler/METHOD.md):
+  1. Substitution: заменяет литералы <0010> (прочерк-CID) на <0003> (пробел) в
+     content streams. Это "освобождает" cells где будет рисоваться значение.
+  2. Параллельный draw stream: рисует значения через встроенный шрифт /C2_0
+     (полный ArialMT, FontFile2 = 58 KB, 1680 глифов / 1425 unicode codepoints).
+
+Покрытие символов:
+  - ToUnicode CMap содержит 98 codepoints (то что есть в постоянном тексте формы).
+  - Для остальных символов (Б, Ё, Ж, З, Х, Ц, Ш, Щ, Ъ, Ы, Э, Ю и т.д.) —
+    используется TTF cmap из FontFile2: unicode → GID. Так как
+    /CIDToGIDMap = /Identity, CID = GID, можно рисовать через <{gid:04X}> Tj.
+
+Семантика value (как утвердил Валентин):
+  Полная: filler рисует ровно те символы что переданы в value. Если len(value)
+  меньше len(spans), оставшиеся cells остаются с оригинальным <0010>.
+
+Extrapolation:
+  Если в mapping поле имеет extrapolate_count > count, filler рисует значения
+  и за пределами реальных dashes (substitution применяется только к count
+  реальных, остальные cells пишутся "поверх свободного пространства").
+"""
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from io import BytesIO
+from pathlib import Path
+from typing import Optional
+
+import pypdf
+from pypdf.generic import ArrayObject, DecodedStreamObject, NameObject
+
+# Координатная система: q + 0.24 0 0 -0.24 0 841.91998 cm + 2.9347825 0 0 2.9347825 58.333332 58.333332 cm
+# даёт CTM_2 = [0.7043478, 0, 0, -0.7043478, 14, 827.91998].
+# Для рисования в device-coord (rl_x, rl_y) через Tm = [1, 0, 0, -1, tm_x, tm_y]:
+#   tm_x = (rl_x - 14) / 0.7043478
+#   tm_y = (827.91998 - rl_y) / 0.7043478
+CTM_PROLOG = (
+    "q\n"
+    "0.24 0 0 -0.24 0 841.91998 cm\n"
+    "2.9347825 0 0 2.9347825 58.333332 58.333332 cm\n"
+)
+CTM_EPILOG = "Q\n"
+
+
+@dataclass
+class FontData:
+    """Извлечённые данные шрифта /C2_0 для рисования любых символов."""
+    char_to_cid: dict[str, str]  # ToUnicode CMap reversed: char → CID hex (98 entries)
+    ttf_unicode_to_gid: dict[int, int]  # TTF cmap: codepoint → GID (1425 entries)
+    base_font: str
+
+    def char_to_cid_or_gid(self, char: str) -> Optional[str]:
+        """Получить hex CID/GID для рисования символа.
+        
+        Сначала пробует ToUnicode CMap (быстрый путь),
+        затем TTF cmap (для символов вне CMap).
+        Returns hex string (4 chars) или None если символ не доступен.
+        """
+        cid = self.char_to_cid.get(char)
+        if cid is not None:
+            return cid
+        # Fallback: TTF cmap (Identity-H ⇒ CID = GID)
+        gid = self.ttf_unicode_to_gid.get(ord(char))
+        if gid is None:
+            return None
+        return f'{gid:04X}'
+
+
+def _parse_W_array(W) -> dict[str, float]:
+    """PDF /W array → {cid_hex: width_em_1000}."""
+    widths = {}
+    items = list(W)
+    i = 0
+    while i < len(items):
+        a = int(items[i])
+        if i + 1 < len(items) and isinstance(items[i + 1], (list, ArrayObject)):
+            for j, w in enumerate(items[i + 1]):
+                widths[f'{a + j:04X}'] = float(w)
+            i += 2
+        else:
+            b = int(items[i + 1]); w = float(items[i + 2])
+            for cid in range(a, b + 1):
+                widths[f'{cid:04X}'] = w
+            i += 3
+    return widths
+
+
+def _parse_tounicode_cmap(cmap_data: str) -> dict[str, str]:
+    """ToUnicode CMap → {cid_hex: unicode_char}."""
+    import re
+    out = {}
+    for m in re.finditer(r'beginbfchar(.*?)endbfchar', cmap_data, re.DOTALL):
+        for cm in re.finditer(r'<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>', m.group(1)):
+            out[cm.group(1).upper().zfill(4)] = chr(int(cm.group(2), 16))
+    for m in re.finditer(r'beginbfrange(.*?)endbfrange', cmap_data, re.DOTALL):
+        body = m.group(1)
+        for cm in re.finditer(r'<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<([0-9A-Fa-f]+)>|\[([^\]]*)\])', body):
+            s = int(cm.group(1), 16)
+            e = int(cm.group(2), 16)
+            if cm.group(4):
+                u_start = int(cm.group(4), 16)
+                for cid in range(s, e + 1):
+                    out[f'{cid:04X}'] = chr(u_start + (cid - s))
+            else:
+                items = re.findall(r'<([0-9A-Fa-f]+)>', cm.group(5))
+                for cid, u_hex in zip(range(s, e + 1), items):
+                    out[f'{cid:04X}'] = chr(int(u_hex, 16))
+    return out
+
+
+def extract_font_data(page, font_name: str = '/C2_0') -> FontData:
+    """Из PDF page достать font /C2_0 + распарсить TTF в FontData."""
+    font_obj = page['/Resources']['/Font'][font_name].get_object()
+    df = font_obj['/DescendantFonts'][0].get_object()
+    
+    # ToUnicode CMap
+    char_to_cid = {}
+    tu = font_obj.get('/ToUnicode')
+    if tu:
+        cmap_data = tu.get_object().get_data().decode('latin-1', errors='replace')
+        cid_to_char = _parse_tounicode_cmap(cmap_data)
+        char_to_cid = {ch: cid for cid, ch in cid_to_char.items()}
+    
+    # TTF cmap для расширенного покрытия
+    ttf_unicode_to_gid = {}
+    desc = df.get('/FontDescriptor')
+    if desc:
+        ff = desc.get_object().get('/FontFile2')
+        if ff:
+            try:
+                from fontTools.ttLib import TTFont
+                ttf_bytes = ff.get_object().get_data()
+                ttf = TTFont(BytesIO(ttf_bytes))
+                cmap = ttf.getBestCmap()  # codepoint → glyph_name
+                glyph_order = ttf.getGlyphOrder()
+                gname_to_gid = {gn: gid for gid, gn in enumerate(glyph_order)}
+                ttf_unicode_to_gid = {
+                    cp: gname_to_gid[gn]
+                    for cp, gn in cmap.items() if gn in gname_to_gid
+                }
+            except ImportError:
+                pass  # fontTools необязателен; работаем только с CMap
+    
+    return FontData(
+        char_to_cid=char_to_cid,
+        ttf_unicode_to_gid=ttf_unicode_to_gid,
+        base_font=str(font_obj.get('/BaseFont')),
+    )
+
+
+class PDFFiller:
+    """Заполнитель декларации УСН на новом blank-е (с встроенным /C2_0 ArialMT).
+    
+    Usage:
+        filler = PDFFiller(
+            blank_path=Path('templates/knd_1152017/blank_2024.pdf'),
+            mappings={
+                1: load_mapping('handoff/pr31_filler/artifacts/page1_field_mapping.json'),
+                4: load_mapping('handoff/pr31_filler/artifacts/page4_field_mapping.json'),
+            },
+        )
+        filler.fill(
+            data={
+                1: {'inn': '330573397709', 'tax_period_code': '34', ...},
+                4: {'insurance_y': '24571', ...},
+            },
+            output_path=Path('out/declaration.pdf'),
+        )
+    """
+    
+    FONT_SIZE = 12
+    FONT_NAME = '/C2_0'
+    
+    def __init__(self, blank_path: Path, mappings: dict[int, dict]):
+        self.blank_path = Path(blank_path)
+        self.mappings = mappings
+        self._missing_chars: list[tuple[str, str]] = []  # (field, char) — для warnings
+    
+    def fill(self, data: dict[int, dict[str, str]], output_path: Path) -> dict:
+        """Заполнить blank данными и записать в output_path.
+        
+        Returns:
+            dict с метаинформацией: pages_filled, fields_filled, missing_chars, ...
+        """
+        # CTM constants для blank24-25 form
+        self.CTM_A = 0.7043478
+        self.CTM_E = 14.0
+        self.CTM_F = 827.91998
+        reader = pypdf.PdfReader(str(self.blank_path))
+        writer = pypdf.PdfWriter(clone_from=reader)
+        
+        stats = {
+            'pages_filled': [],
+            'fields_filled': 0,
+            'fields_skipped': [],
+            'missing_chars': [],
+            'extrapolated_fields': [],
+        }
+        
+        for page_num, page_data in data.items():
+            if page_num not in self.mappings:
+                stats['fields_skipped'].extend((page_num, k) for k in page_data)
+                continue
+            
+            page = writer.pages[page_num - 1]
+            self._all_dashes = self._scan_all_dashes(page)
+            font = extract_font_data(page, self.FONT_NAME)
+            mapping = self.mappings[page_num]
+            
+            page_stats = self._fill_page(page, mapping, page_data, font, writer)
+            stats['pages_filled'].append(page_num)
+            stats['fields_filled'] += page_stats['fields_filled']
+            stats['missing_chars'].extend(page_stats['missing_chars'])
+            stats['extrapolated_fields'].extend(page_stats['extrapolated_fields'])
+        
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, 'wb') as f:
+            writer.write(f)
+        
+        stats['output_path'] = str(output_path)
+        return stats
+    
+
+    def _scan_all_dashes(self, page) -> list[dict]:
+        """Сканирует все <0010> placeholders в blank и возвращает их device-coords + byte spans.
+        Используется для substitution-by-draw-position."""
+        try:
+            from build_page_mapping import parse_page_streams, extract_font_data as efd  # type: ignore
+        except ImportError:
+            import sys as _sys
+            from pathlib import Path as _P
+            _sys.path.insert(0, str(_P(__file__).parents[3] / 'handoff' / 'pr31_filler' / 'scripts'))
+            from build_page_mapping import parse_page_streams, extract_font_data as efd  # type: ignore
+        
+        font = efd(page, self.FONT_NAME)
+        elems, _ = parse_page_streams(page, font['widths'], font['cid_to_char'])
+        
+        contents = page.get('/Contents')
+        streams = list(contents) if isinstance(contents, ArrayObject) else [contents]
+        bounds = [0]
+        for s in streams:
+            bounds.append(bounds[-1] + len(s.get_object().get_data()) + 1)
+        
+        result = []
+        for e in elems:
+            if e.get('hex') != '0010':
+                continue
+            s_global, e_global = e['abs_span']
+            for s_idx in range(len(streams)):
+                if bounds[s_idx] <= s_global < bounds[s_idx+1]:
+                    result.append({
+                        'rl_x': e['rl_x'],
+                        'rl_y': e['rl_y'],
+                        'stream_idx': s_idx,
+                        'span': [s_global - bounds[s_idx], e_global - bounds[s_idx]],
+                    })
+                    break
+        return result
+
+    def _fill_page(self, page, mapping: dict, page_data: dict[str, str],
+                   font: FontData, writer) -> dict:
+        """Заполнить одну страницу: substitution + draw stream через /C2_0."""
+        contents = page.get('/Contents')
+        streams = list(contents) if isinstance(contents, ArrayObject) else [contents]
+        
+        # Группируем substitution по stream_idx (нужно работать с каждым streamом отдельно)
+        subs_by_stream: dict[int, list[list[int]]] = {}  # stream_idx → list of [start, end] spans
+        draw_commands: list[str] = []  # все BT/Tj команды для draw stream
+        
+        page_stats = {'fields_filled': 0, 'missing_chars': [], 'extrapolated_fields': []}
+        
+        # Build lookup: field_name → field_mapping
+        fields_by_name = {f['field']: f for f in mapping['fields']}
+        
+        for field_name, value in page_data.items():
+            if value is None or value == '':
+                continue
+            field_map = fields_by_name.get(field_name)
+            if field_map is None:
+                continue  # skip unknown field
+            
+            spans = field_map['spans_in_stream']
+            tm_cells = field_map['tm_for_drawing_cells']
+            stream_idx = field_map['stream_idx']
+            count_real = field_map['count']  # реальные spans (для substitution)
+            extrapolate = field_map.get('extrapolate_count')
+            
+            n_substitute = min(len(value), len(spans))
+            n_draw = min(len(value), len(tm_cells))
+            
+            if extrapolate and len(value) > count_real:
+                page_stats['extrapolated_fields'].append(field_name)
+            
+            # Optional flag: substitute ALL spans (для extended zones — gap cells)
+            substitute_all = field_map.get('substitute_all_spans', False)
+            if substitute_all:
+                n_substitute = len(spans)
+            
+            # 1) Substitution: использовать spans_in_stream напрямую из mapping.
+            # Spans уже sorted by parser_x (visual cell order) на этапе build_mapping.
+            # Каждый span может иметь свой stream_idx (если поле захватывает gap-cells из других streams)
+            spans_with_streams = field_map.get('spans_with_streams')  # optional: [{span: [s,e], stream_idx: N}, ...]
+            for i in range(n_substitute):
+                if i >= len(spans):
+                    break
+                span = spans[i]
+                # Use per-span stream_idx if available, else field's stream_idx
+                if spans_with_streams and i < len(spans_with_streams):
+                    span_stream = spans_with_streams[i]['stream_idx']
+                else:
+                    span_stream = stream_idx
+                subs_by_stream.setdefault(span_stream, []).append(span)
+            
+            # 2) Draw для всех символов (включая extrapolated)
+            for i in range(n_draw):
+                ch = value[i]
+                cid = font.char_to_cid_or_gid(ch)
+                if cid is None:
+                    page_stats['missing_chars'].append((field_name, ch))
+                    continue
+                tm_x, tm_y = tm_cells[i]
+                draw_commands.append(
+                    f"BT\n{self.FONT_NAME} {self.FONT_SIZE} Tf\n"
+                    f"1 0 0 -1 {tm_x:.4f} {tm_y:.4f} Tm\n"
+                    f"<{cid}> Tj\nET\n"
+                )
+            
+            page_stats['fields_filled'] += 1
+        
+        # Применяем substitution: для каждого stream'а — обратный порядок по offset
+        # (чтобы не сбить байт-смещения остальных).
+        new_refs = [None] * len(streams)
+        for s_idx, stream_obj in enumerate(streams):
+            if s_idx in subs_by_stream:
+                target = stream_obj.get_object()
+                raw = target.get_data().decode('latin-1')
+                spans_list = sorted(subs_by_stream[s_idx], key=lambda s: -s[0])
+                for span in spans_list:
+                    s, e = span
+                    if raw[s:e] == '<0010>':
+                        raw = raw[:s] + '<0003>' + raw[e:]
+                    # else: уже модифицирован (не важно — silent skip)
+                new_stream = DecodedStreamObject()
+                new_stream.set_data(raw.encode('latin-1'))
+                new_refs[s_idx] = writer._add_object(new_stream)
+            else:
+                # Stream без изменений — оставляем reference как было
+                if hasattr(stream_obj, 'indirect_reference') and stream_obj.indirect_reference is not None:
+                    new_refs[s_idx] = stream_obj.indirect_reference
+                else:
+                    new_refs[s_idx] = writer._add_object(stream_obj)
+        
+        # Добавляем draw stream в конец
+        if draw_commands:
+            draw = CTM_PROLOG + ''.join(draw_commands) + CTM_EPILOG
+            draw_stream = DecodedStreamObject()
+            draw_stream.set_data(draw.encode('latin-1'))
+            new_refs.append(writer._add_object(draw_stream))
+        
+        page[NameObject('/Contents')] = ArrayObject(new_refs)
+        
+        return page_stats
+
+
+# --------------------------------------------------------------------
+# Helpers для удобного использования
+# --------------------------------------------------------------------
+def load_mapping(path: Path) -> dict:
+    """Загрузить page{N}_field_mapping.json."""
+    return json.loads(Path(path).read_text())
+
+
+def fill_declaration(blank_path: Path, mappings_paths: dict[int, Path],
+                     data: dict[int, dict[str, str]], output_path: Path) -> dict:
+    """Удобная высокоуровневая функция."""
+    mappings = {p: load_mapping(path) for p, path in mappings_paths.items()}
+    filler = PDFFiller(blank_path, mappings)
+    return filler.fill(data, output_path)
